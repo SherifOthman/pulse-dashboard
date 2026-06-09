@@ -177,6 +177,7 @@ export type CreateDoctorDto = {
   gender?: string
   profileImageUrl?: string
   coverImageUrl?: string
+  workingDays?: WorkingDayDto[]
 }
 
 export type PharmacyDto = {

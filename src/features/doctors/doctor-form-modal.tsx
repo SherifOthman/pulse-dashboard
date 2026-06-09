@@ -67,6 +67,9 @@ export function DoctorFormModal({
   const [gender, setGender] = useState('')
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
+  const [workingDays, setWorkingDays] = useState<{ day: number; startTime: string; endTime: string; enabled: boolean }[]>(
+    Array.from({ length: 7 }, (_, i) => ({ day: i, startTime: '09:00', endTime: '17:00', enabled: false }))
+  )
 
   const { data: governorates = [] } = useQuery<GovernorateDto[]>({
     queryKey: ['governorates'],
@@ -115,6 +118,7 @@ export function DoctorFormModal({
 
   const handleSubmit = () => {
     if (!name.trim()) return
+    const enabledDays = workingDays.filter((d) => d.enabled)
     onSubmit({
       name: name.trim(),
       specializationId: specializationId || undefined,
@@ -125,6 +129,7 @@ export function DoctorFormModal({
       gender: gender || undefined,
       profileImageUrl: profileImageUrl ?? undefined,
       coverImageUrl: coverImageUrl ?? undefined,
+      workingDays: enabledDays.length > 0 ? enabledDays.map((d) => ({ day: d.day, startTime: d.startTime, endTime: d.endTime })) : undefined,
     })
   }
 
@@ -159,14 +164,23 @@ export function DoctorFormModal({
               />
             </div>
 
-            {/* ── Name (full width) ── */}
+            {/* ── Name ── */}
             <Field label="الاسم" required>
               <Input
                 variant="secondary"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="د. محمد أحمد"
-                className="w-full"
+              />
+            </Field>
+
+            {/* ── Description ── */}
+            <Field label="الوصف">
+              <Input
+                variant="secondary"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="نبذة عن الطبيب وخبراته..."
               />
             </Field>
 
@@ -174,6 +188,7 @@ export function DoctorFormModal({
             <div className="grid grid-cols-2 gap-4">
               <Field label="التخصص">
                 <AppSelect
+                  variant="secondary"
                   options={specializations.map((s) => ({
                     id: s.id,
                     label: s.name,
@@ -181,11 +196,11 @@ export function DoctorFormModal({
                   value={specializationId}
                   onChange={setSpecializationId}
                   placeholder="اختر التخصص"
-                  className="w-full"
                 />
               </Field>
               <Field label="الجنس">
                 <AppSelect
+                  variant="secondary"
                   options={[
                     { id: 'Male', label: 'ذكر' },
                     { id: 'Female', label: 'أنثى' },
@@ -193,7 +208,6 @@ export function DoctorFormModal({
                   value={gender}
                   onChange={setGender}
                   placeholder="اختر الجنس"
-                  className="w-full"
                 />
               </Field>
             </div>
@@ -202,6 +216,7 @@ export function DoctorFormModal({
             <div className="grid grid-cols-2 gap-4">
               <Field label="المحافظة">
                 <AppSelect
+                  variant="secondary"
                   options={governorates.map((g) => ({
                     id: g.id,
                     label: g.name,
@@ -212,17 +227,16 @@ export function DoctorFormModal({
                     setCityId('')
                   }}
                   placeholder="اختر المحافظة"
-                  className="w-full"
                 />
               </Field>
               <Field label="المدينة">
                 <AppSelect
+                  variant="secondary"
                   options={cities.map((c) => ({ id: c.id, label: c.name }))}
                   value={cityId}
                   onChange={setCityId}
                   placeholder="اختر المدينة"
                   isDisabled={!governorateId}
-                  className="w-full"
                 />
               </Field>
             </div>
@@ -236,7 +250,6 @@ export function DoctorFormModal({
                   value={visitPrice}
                   onChange={(e) => setVisitPrice(e.target.value)}
                   placeholder="0"
-                  className="w-full"
                 />
               </Field>
               <Field label="العنوان">
@@ -245,21 +258,72 @@ export function DoctorFormModal({
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="عنوان العيادة"
-                  className="w-full"
                 />
               </Field>
             </div>
 
-            {/* ── Description ── */}
-            <Field label="الوصف">
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="نبذة عن الطبيب وخبراته..."
-                rows={4}
-                className="input w-full resize-none rounded-field border border-divider bg-field px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-              />
-            </Field>
+            {/* ── Working days ── */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-foreground">أيام العمل</label>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { day: 0, name: 'الأحد' },
+                  { day: 1, name: 'الإثنين' },
+                  { day: 2, name: 'الثلاثاء' },
+                  { day: 3, name: 'الأربعاء' },
+                  { day: 4, name: 'الخميس' },
+                  { day: 5, name: 'الجمعة' },
+                  { day: 6, name: 'السبت' },
+                ].map((d) => {
+                  const wd = workingDays[d.day]
+                  return (
+                    <div
+                      key={d.day}
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors ${wd.enabled ? 'border-divider bg-surface' : 'border-dashed border-divider bg-transparent'}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={wd.enabled}
+                        onChange={(e) =>
+                          setWorkingDays((prev) =>
+                            prev.map((x) => (x.day === d.day ? { ...x, enabled: e.target.checked } : x))
+                          )
+                        }
+                        className="h-4 w-4 accent-primary rounded"
+                      />
+                      <span className="min-w-14 text-sm text-foreground">{d.name}</span>
+                      {wd.enabled && (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            type="time"
+                            variant="secondary"
+                            value={wd.startTime}
+                            onChange={(e) =>
+                              setWorkingDays((prev) =>
+                                prev.map((x) => (x.day === d.day ? { ...x, startTime: e.target.value } : x))
+                              )
+                            }
+                            className="w-28"
+                          />
+                          <span className="text-muted">–</span>
+                          <Input
+                            type="time"
+                            variant="secondary"
+                            value={wd.endTime}
+                            onChange={(e) =>
+                              setWorkingDays((prev) =>
+                                prev.map((x) => (x.day === d.day ? { ...x, endTime: e.target.value } : x))
+                              )
+                            }
+                            className="w-28"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
           </ModalBody>
 
           <ModalFooter>

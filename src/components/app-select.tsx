@@ -26,6 +26,7 @@ type AppSelectProps = {
   isDisabled?: boolean;
   className?: string;
   label?: string;
+  variant?: string;
 };
 
 export function AppSelect({
@@ -35,6 +36,7 @@ export function AppSelect({
   placeholder = "اختر...",
   isDisabled,
   className = "",
+  variant,
 }: AppSelectProps) {
   return (
     <Select
@@ -43,6 +45,7 @@ export function AppSelect({
       isDisabled={isDisabled}
       className={className}
       placeholder={placeholder}
+      variant={variant as any}
     >
       <SelectTrigger className="min-w-40">
         <SelectValue />
