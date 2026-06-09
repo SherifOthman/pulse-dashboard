@@ -1,48 +1,31 @@
-import { useState, useCallback, useEffect } from "react"
-import { Outlet } from "react-router-dom"
+import { useState } from "react"
+import { Outlet, useNavigate } from "react-router-dom"
 import { Sidebar } from "@/components/sidebar"
 import { Button, Drawer, Tooltip, Chip } from "@heroui/react"
-import { Menu, HeartPulse, User, Lock } from "lucide-react"
-import { ChangePasswordModal } from "@/components/change-password-modal"
+import { Menu, HeartPulse, User, Sun, Moon, LogOut } from "lucide-react"
 import { useMe } from "@/features/auth/use-me"
+import { useAuthStore } from "@/auth-store"
+import { useLocalStorage } from "@/hooks/use-local-storage"
+import { useMediaQuery } from "@/hooks/use-media-query"
+import { useTheme } from "@/hooks/use-theme"
 
 const SIDEBAR_WIDTH = 256
 const SIDEBAR_COLLAPSED_WIDTH = 64
 
-function useLocalStorage<T>(key: string, initial: T): [T, (v: T) => void] {
-  const [value, setValue] = useState<T>(() => {
-    try {
-      const raw = localStorage.getItem(key)
-      return raw ? (JSON.parse(raw) as T) : initial
-    } catch {
-      return initial
-    }
-  })
-  const set = useCallback((v: T) => {
-    setValue(v)
-    localStorage.setItem(key, JSON.stringify(v))
-  }, [key])
-  return [value, set]
-}
-
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
-  useEffect(() => {
-    const mql = window.matchMedia(query)
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
-    mql.addEventListener("change", handler)
-    return () => mql.removeEventListener("change", handler)
-  }, [query])
-  return matches
-}
-
 export function DashboardLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useLocalStorage("sidebarCollapsed", false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [passwordModalOpen, setPasswordModalOpen] = useState(false)
+  const navigate = useNavigate()
   const { data: me } = useMe()
+  const clearSession = useAuthStore((s) => s.clearSession)
   const isMobile = useMediaQuery("(max-width: 1023px)")
   const sidebarWidth = sidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH
+  const { theme, toggle } = useTheme()
+
+  const handleLogout = () => {
+    clearSession()
+    navigate("/login")
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -77,9 +60,19 @@ export function DashboardLayout() {
                   <span className="text-lg font-bold text-foreground">نبض</span>
                 </div>
               )}
+              <Tooltip delay={300}>
+                <Tooltip.Trigger>
+                  <Button isIconOnly variant="ghost" onPress={toggle}>
+                    {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                  </Button>
+                </Tooltip.Trigger>
+                <Tooltip.Content placement="bottom">
+                  <p>{theme === "light" ? "الوضع النهاري" : "الوضع الليلي"}</p>
+                </Tooltip.Content>
+              </Tooltip>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
               {me && (
                 <div className="flex items-center gap-2 text-sm">
                   <div className="bg-primary/10 hidden h-7 w-7 items-center justify-center rounded-full md:flex">
@@ -87,7 +80,7 @@ export function DashboardLayout() {
                   </div>
                   <div className="hidden flex-col items-end md:flex">
                     <span className="font-medium text-foreground leading-tight">{me.fullName}</span>
-                    <Chip size="sm" variant="flat" color={me.role === 'Admin' ? 'warning' : 'default'} className="h-5 text-[10px] px-1.5">
+                    <Chip size="sm" variant="soft" color={me.role === 'Admin' ? 'warning' : 'default'} className="h-5 text-[10px] px-1.5">
                       {me.role === 'Admin' ? 'مدير النظام' : 'مشرف'}
                     </Chip>
                   </div>
@@ -95,12 +88,12 @@ export function DashboardLayout() {
               )}
               <Tooltip delay={300}>
                 <Tooltip.Trigger>
-                  <Button isIconOnly variant="ghost" onPress={() => setPasswordModalOpen(true)}>
-                    <Lock className="h-4 w-4" />
+                  <Button isIconOnly variant="ghost" onPress={handleLogout}>
+                    <LogOut className="h-4 w-4 scale-x-[-1]" />
                   </Button>
                 </Tooltip.Trigger>
                 <Tooltip.Content placement="bottom">
-                  <p>تغيير كلمة المرور</p>
+                  <p>تسجيل الخروج</p>
                 </Tooltip.Content>
               </Tooltip>
             </div>
@@ -132,7 +125,6 @@ export function DashboardLayout() {
           </Drawer.Content>
         </Drawer.Backdrop>
       )}
-      <ChangePasswordModal isOpen={passwordModalOpen} onClose={() => setPasswordModalOpen(false)} />
     </div>
   )
 }

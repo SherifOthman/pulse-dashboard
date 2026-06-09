@@ -2,7 +2,7 @@ import { useAuthStore } from "@/auth-store";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5170",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5170/dashboard",
   withCredentials: true,
 });
 
@@ -27,12 +27,13 @@ api.interceptors.response.use(
       if (!refreshPromise) {
         refreshPromise = (async () => {
           try {
+            const storedRefreshToken = useAuthStore.getState().refreshToken;
             const { data } = await axios.post(
               `${api.defaults.baseURL}/auth/refresh`,
-              {},
+              storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
               { withCredentials: true },
             );
-            useAuthStore.getState().setSession({ accessToken: data.accessToken });
+            useAuthStore.getState().setSession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
           } catch (e) {
             useAuthStore.getState().clearSession();
             throw e;

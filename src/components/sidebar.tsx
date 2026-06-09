@@ -1,25 +1,15 @@
-import { useNavigate, useLocation } from "react-router-dom"
-import { useAuthStore } from "@/auth-store"
-import { useMe } from "@/features/auth/use-me"
-import { Button, Separator, Tooltip } from "@heroui/react"
-import { LayoutDashboard, Stethoscope, Pill, FlaskConical, Scan, Building2, GraduationCap, LogOut, Menu, HeartPulse, Shield } from "lucide-react"
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useMe } from '@/features/auth/use-me'
+import { Button, Separator, Tooltip } from '@heroui/react'
+import {
+  LayoutDashboard, Stethoscope, Pill, FlaskConical,
+  Scan, Building2, GraduationCap, Menu, HeartPulse, Shield, User,
+  type LucideIcon,
+} from 'lucide-react'
 
-type NavItem = {
-  path: string
-  label: string
-  icon: typeof LayoutDashboard
-}
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-const navItems: NavItem[] = [
-  { path: "/", label: "الرئيسية", icon: LayoutDashboard },
-  { path: "/doctors", label: "الأطباء", icon: Stethoscope },
-  { path: "/pharmacies", label: "الصيدليات", icon: Pill },
-  { path: "/labs", label: "المختبرات", icon: FlaskConical },
-  { path: "/radiology", label: "الأشعة", icon: Scan },
-  { path: "/cities", label: "المدن", icon: Building2 },
-  { path: "/specializations", label: "التخصصات", icon: GraduationCap },
-  { path: "/users", label: "المستخدمين", icon: Shield },
-]
+type NavItem = { path: string; label: string; icon: LucideIcon; adminOnly?: boolean }
 
 type SidebarProps = {
   collapsed: boolean
@@ -27,112 +17,92 @@ type SidebarProps = {
   onLinkClick: () => void
 }
 
-function navLinkClass(isActive: boolean, collapsed: boolean): string {
-  const base = "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
-  const layout = collapsed ? "justify-center" : ""
-  const state = isActive
-    ? "bg-surface-tertiary text-foreground font-semibold"
-    : "text-muted hover:bg-surface-secondary hover:text-foreground"
-  return [base, layout, state].filter(Boolean).join(" ")
+// ── Nav config ────────────────────────────────────────────────────────────────
+
+const NAV_ITEMS: NavItem[] = [
+  { path: '/',               label: 'الرئيسية',        icon: LayoutDashboard },
+  { path: '/doctors',        label: 'الأطباء',         icon: Stethoscope     },
+  { path: '/pharmacies',     label: 'الصيدليات',       icon: Pill            },
+  { path: '/labs',           label: 'المختبرات',       icon: FlaskConical    },
+  { path: '/radiology',      label: 'الأشعة',          icon: Scan            },
+  { path: '/cities',         label: 'المدن',           icon: Building2       },
+  { path: '/specializations',label: 'التخصصات',        icon: GraduationCap   },
+  { path: '/users',          label: 'المستخدمين',      icon: Shield, adminOnly: true },
+  { path: '/profile',        label: 'الملف الشخصي',   icon: User            },
+]
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function isActivePath(current: string, target: string) {
+  return target === '/' ? current === '/' : current.startsWith(target)
 }
+
+function linkClass(active: boolean, collapsed: boolean) {
+  return [
+    'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors',
+    collapsed && 'justify-center',
+    active
+      ? 'bg-surface-tertiary text-foreground font-semibold'
+      : 'text-muted hover:bg-surface-secondary hover:text-foreground',
+  ].filter(Boolean).join(' ')
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export function Sidebar({ collapsed, onToggleCollapse, onLinkClick }: SidebarProps) {
   const location = useLocation()
-  const navigate = useNavigate()
-  const clearSession = useAuthStore((s) => s.clearSession)
-  const { data: me } = useMe()
-  const role = me?.role ?? null
-  const filteredItems = navItems.filter((item) => item.path !== '/users' || role === 'Admin')
+  const navigate  = useNavigate()
+  const role      = useMe().data?.role ?? null
 
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/"
-    return location.pathname.startsWith(path)
-  }
-
-  const handleLogout = () => {
-    clearSession()
-    navigate("/login")
-  }
+  const items = NAV_ITEMS.filter((item) => !item.adminOnly || role === 'Admin')
 
   return (
     <div className="flex h-full flex-col">
-      {/* Brand header */}
-      <div
-        className={`flex min-h-16 items-center px-4 ${collapsed ? "justify-center" : "justify-between"}`}
-      >
+      {/* Brand */}
+      <div className={`flex min-h-16 items-center px-4 ${collapsed ? 'justify-center' : 'justify-between'}`}>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <HeartPulse className="h-4 w-4" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+              <HeartPulse className="h-4 w-4 text-white" />
             </div>
             <h1 className="text-lg font-bold text-foreground">نبض</h1>
           </div>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          isIconOnly
-          onPress={onToggleCollapse}
-          className="hidden lg:flex"
-        >
+        <Button variant="ghost" size="sm" isIconOnly onPress={onToggleCollapse} className="hidden lg:flex">
           <Menu className="h-4 w-4" />
         </Button>
       </div>
 
       <Separator />
 
-      {/* Navigation */}
+      {/* Nav */}
       <nav className="flex-1 overflow-auto px-2 py-2">
         <ul className="flex flex-col gap-1">
-          {filteredItems.map((item) => {
-            const Icon = item.icon
-
-            const link = (
+          {items.map(({ path, label, icon: Icon }) => {
+            const active = isActivePath(location.pathname, path)
+            const btn = (
               <button
-                onClick={() => {
-                  navigate(item.path)
-                  onLinkClick()
-                }}
-                className={navLinkClass(isActive(item.path), collapsed)}
+                onClick={() => { navigate(path); onLinkClick() }}
+                className={linkClass(active, collapsed)}
               >
                 <Icon className="h-5 w-5 shrink-0" />
-                {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                {!collapsed && <span className="text-sm font-medium">{label}</span>}
               </button>
             )
 
             return (
-              <li key={item.path} className="w-full">
+              <li key={path} className="w-full">
                 {collapsed ? (
                   <Tooltip delay={300}>
-                    <Tooltip.Trigger className="w-full">{link}</Tooltip.Trigger>
-                    <Tooltip.Content placement="right">
-                      <p>{item.label}</p>
-                    </Tooltip.Content>
+                    <Tooltip.Trigger className="w-full">{btn}</Tooltip.Trigger>
+                    <Tooltip.Content placement="right"><p>{label}</p></Tooltip.Content>
                   </Tooltip>
-                ) : (
-                  link
-                )}
+                ) : btn}
               </li>
             )
           })}
         </ul>
       </nav>
-
-      {/* Logout */}
-      <div className="px-2 py-2">
-        <Tooltip delay={300} isDisabled={!collapsed}>
-          <Tooltip.Trigger className="w-full">
-            <button
-              onClick={handleLogout}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-danger transition-colors hover:bg-danger/10 ${collapsed ? "justify-center" : ""}`}
-            >
-              <LogOut className="h-5 w-5 shrink-0" />
-              {!collapsed && <span>تسجيل الخروج</span>}
-            </button>
-          </Tooltip.Trigger>
-          {collapsed && <Tooltip.Content placement="right"><p>تسجيل الخروج</p></Tooltip.Content>}
-        </Tooltip>
-      </div>
     </div>
   )
 }

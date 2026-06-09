@@ -2,13 +2,19 @@ import { AppSelect } from "@/components/app-select";
 import { ConfirmModal } from "@/components/confirm-modal";
 import { PageHeader } from "@/components/page-header";
 import { Paginator } from "@/components/paginator";
-import { useMe } from "@/features/auth/use-me";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useGovernorates } from "@/hooks/use-governorates";
 import type { CreateDoctorDto, DoctorDto } from "@/types";
 import { BusinessType } from "@/types";
-import { Button, Chip, Input, Skeleton, toast } from "@heroui/react";
-import { Pencil, Search, Stethoscope, Trash2 } from "lucide-react";
+import {
+  Button,
+  Chip,
+  SearchField,
+  Skeleton,
+  Table,
+  toast,
+} from "@heroui/react";
+import { Pencil, Stethoscope, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { DoctorFormModal } from "./doctor-form-modal";
 import {
@@ -38,8 +44,6 @@ export function DoctorsPage() {
 
   const { data: governorates = [] } = useGovernorates(BusinessType.Doctor);
 
-  const { data: me } = useMe();
-  const role = me?.role ?? null;
   const createMutation = useCreateDoctor();
   const updateMutation = useUpdateDoctor();
   const deleteMutation = useDeleteDoctor();
@@ -87,20 +91,24 @@ export function DoctorsPage() {
         title="الأطباء"
         subtitle={data ? `${data.totalCount} طبيب مسجل` : "جاري التحميل..."}
         action={
-          <Button color="primary" onPress={() => setAddOpen(true)}>
+          <Button variant="primary" onPress={() => setAddOpen(true)}>
             إضافة طبيب
           </Button>
         }
       />
 
       <div className="mb-6 flex items-center gap-3 flex-wrap">
-        <Input
+        <SearchField.Root
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="البحث بالاسم..."
+          onChange={setSearchInput}
           className="w-56"
-          endContent={<Search className="h-4 w-4 text-muted" />}
-        />
+        >
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder="البحث بالاسم..." />
+            <SearchField.ClearButton />
+          </SearchField.Group>
+        </SearchField.Root>
         <AppSelect
           options={governorates.map((g) => ({ id: g.id, label: g.name }))}
           selectedKey={governorateId}
@@ -126,150 +134,137 @@ export function DoctorsPage() {
         )}
       </div>
 
-      <div className="bg-surface border-divider rounded-2xl border shadow-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface-secondary border-divider border-b">
-              <th className="text-right px-4 py-3 font-semibold text-foreground">
-                الاسم
-              </th>
-              <th className="text-right px-4 py-3 font-semibold text-foreground hidden md:table-cell">
-                التخصص
-              </th>
-              <th className="text-right px-4 py-3 font-semibold text-foreground hidden lg:table-cell">
-                المحافظة
-              </th>
-              <th className="text-right px-4 py-3 font-semibold text-foreground hidden lg:table-cell">
-                التقييم
-              </th>
-              <th className="text-right px-4 py-3 font-semibold text-foreground hidden md:table-cell">
-                سعر الكشف
-              </th>
-              {role === "Admin" && (
-                <th className="text-right px-4 py-3 font-semibold text-foreground hidden xl:table-cell">
-                  أضيف بواسطة
-                </th>
-              )}
-              <th className="text-left px-4 py-3 font-semibold text-foreground">
-                الإجراءات
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-divider border-b">
-                  <td className="px-4 py-3">
-                    <Skeleton className="h-4 w-40 rounded" />
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <Skeleton className="h-4 w-28 rounded" />
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <Skeleton className="h-4 w-24 rounded" />
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <Skeleton className="h-4 w-16 rounded" />
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <Skeleton className="h-4 w-20 rounded" />
-                  </td>
-                  <td className="px-4 py-3">
-                    <Skeleton className="h-8 w-24 rounded" />
-                  </td>
-                </tr>
-              ))
-            ) : isError ? (
-              <tr>
-                <td colSpan={7} className="text-center py-12 text-danger">
+      <Table.Root variant="primary">
+        <Table.Content>
+          <Table.Header>
+            <Table.Column isRowHeader className="text-right">
+              الاسم
+            </Table.Column>
+            <Table.Column className="hidden md:table-cell text-right">
+              التخصص
+            </Table.Column>
+            <Table.Column className="hidden lg:table-cell text-right">
+              المحافظة
+            </Table.Column>
+            <Table.Column className="hidden lg:table-cell text-right">
+              التقييم
+            </Table.Column>
+            <Table.Column className="hidden md:table-cell text-right">
+              سعر الكشف
+            </Table.Column>
+            <Table.Column className="hidden xl:table-cell text-right">
+              أضيف بواسطة
+            </Table.Column>
+            <Table.Column className="text-right">الإجراءات</Table.Column>
+          </Table.Header>
+          <Table.Body
+            renderEmptyState={() =>
+              isError ? (
+                <div className="text-center py-12 text-danger">
                   حدث خطأ في تحميل البيانات
-                </td>
-              </tr>
-            ) : !data?.items.length ? (
-              <tr>
-                <td colSpan={7} className="text-center py-12 text-muted">
-                  <div className="flex flex-col items-center gap-2">
-                    <Stethoscope className="h-8 w-8 text-muted" />
-                    <span>لا يوجد أطباء مسجلون</span>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              data.items.map((doctor) => (
-                <tr
-                  key={doctor.id}
-                  className="border-divider border-b hover:bg-surface-secondary transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-                        <Stethoscope className="h-4 w-4 text-primary" />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 py-12 text-muted">
+                  <Stethoscope className="h-8 w-8 text-muted" />
+                  <span>لا يوجد أطباء مسجلون</span>
+                </div>
+              )
+            }
+          >
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <Table.Row key={i}>
+                    <Table.Cell>
+                      <Skeleton className="h-4 w-40 rounded" />
+                    </Table.Cell>
+                    <Table.Cell className="hidden md:table-cell">
+                      <Skeleton className="h-4 w-28 rounded" />
+                    </Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell">
+                      <Skeleton className="h-4 w-24 rounded" />
+                    </Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell">
+                      <Skeleton className="h-4 w-16 rounded" />
+                    </Table.Cell>
+                    <Table.Cell className="hidden md:table-cell">
+                      <Skeleton className="h-4 w-20 rounded" />
+                    </Table.Cell>
+                    <Table.Cell className="hidden xl:table-cell">
+                      <Skeleton className="h-4 w-16 rounded" />
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Skeleton className="h-8 w-24 rounded" />
+                    </Table.Cell>
+                  </Table.Row>
+                ))
+              : data?.items.map((doctor) => (
+                  <Table.Row key={doctor.id}>
+                    <Table.Cell>
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
+                          <Stethoscope className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="font-medium text-foreground">
+                          {doctor.name}
+                        </span>
                       </div>
-                      <span className="font-medium text-foreground">
-                        {doctor.name}
+                    </Table.Cell>
+                    <Table.Cell className="hidden md:table-cell">
+                      <Chip size="sm" variant="soft" color="accent">
+                        {doctor.specialization}
+                      </Chip>
+                    </Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell text-muted">
+                      {doctor.governorate}
+                    </Table.Cell>
+                    <Table.Cell className="hidden lg:table-cell">
+                      <span className="flex items-center gap-1 text-warning">
+                        ★ {doctor.averageRating.toFixed(1)}
                       </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <Chip size="sm" variant="flat" color="primary">
-                      {doctor.specialization}
-                    </Chip>
-                  </td>
-                  <td className="px-4 py-3 text-muted hidden lg:table-cell">
-                    {doctor.governorate}
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <span className="flex items-center gap-1 text-warning">
-                      ★ {doctor.averageRating.toFixed(1)}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    {doctor.visitPrice != null ? (
-                      <span className="font-medium text-success">
-                        {doctor.visitPrice} ج.م
-                      </span>
-                    ) : (
-                      <span className="text-muted">—</span>
-                    )}
-                  </td>
-                  {role === "Admin" && (
-                    <td className="px-4 py-3 text-muted hidden xl:table-cell text-xs">
+                    </Table.Cell>
+                    <Table.Cell className="hidden md:table-cell">
+                      {doctor.visitPrice != null ? (
+                        <span className="font-medium text-success">
+                          {doctor.visitPrice} ج.م
+                        </span>
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </Table.Cell>
+                    <Table.Cell className="hidden xl:table-cell text-muted text-xs">
                       {doctor.createdBy || "—"}
-                    </td>
-                  )}
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        isIconOnly
-                        onPress={() => setEditTarget(doctor)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        color="danger"
-                        isIconOnly
-                        onPress={() => setDeleteTarget(doctor)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          isIconOnly
+                          onPress={() => setEditTarget(doctor)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="danger-soft"
+                          isIconOnly
+                          onPress={() => setDeleteTarget(doctor)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+          </Table.Body>
+        </Table.Content>
+      </Table.Root>
 
-        {data && totalPages > 1 && (
-          <div className="border-divider flex justify-center border-t py-4">
-            <Paginator page={page} total={totalPages} onChange={setPage} />
-          </div>
-        )}
-      </div>
+      {data && totalPages > 1 && (
+        <div className="flex justify-center py-4">
+          <Paginator page={page} total={totalPages} onChange={setPage} />
+        </div>
+      )}
 
       <DoctorFormModal
         isOpen={addOpen}

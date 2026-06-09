@@ -12,7 +12,7 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      const { data } = await api.get<DashboardStats>('/dashboard/stats')
+      const { data } = await api.get<DashboardStats>('/stats')
       return data
     },
   })

@@ -10,6 +10,7 @@ import { RadiologyPage } from '@/features/radiology/radiology-page'
 import { CitiesPage } from '@/features/cities/cities-page'
 import { SpecializationsPage } from '@/features/specializations/specializations-page'
 import { UsersPage } from '@/features/users/users-page'
+import { ProfilePage } from '@/features/profile/profile-page'
 import { useAuthStore } from '@/auth-store'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="cities" element={<CitiesPage />} />
             <Route path="specializations" element={<SpecializationsPage />} />
             <Route path="users" element={<UsersPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
-:root {
+.light {
   --accent: oklch(62.04% 0.195 253.83);
   --accent-foreground: oklch(99.11% 0 0);
   --background: oklch(97.02% 0.0015 253.83);
@@ -31,6 +31,41 @@
   --surface-tertiary: oklch(93.73% 0.0012 253.83);
   --surface-tertiary-foreground: oklch(21.03% 0.0015 253.83);
   --warning: oklch(78.19% 0.159 72.33);
+  --warning-foreground: oklch(21.03% 0.0059 72.33);
+  --radius: 0.5rem;
+  --field-radius: 0.75rem;
+}
+
+.dark {
+  --accent: oklch(0.6204 0.195 253.83);
+  --accent-foreground: oklch(99.11% 0 0);
+  --background: oklch(12% 0.005 285.823);
+  --border: oklch(28% 0.006 286.033);
+  --danger: oklch(0.594 0.1967 24.63);
+  --danger-foreground: oklch(99.11% 0 0);
+  --default: oklch(27.4% 0.006 286.033);
+  --default-foreground: oklch(99.11% 0 0);
+  --field-background: oklch(0.2103 0.0059 285.89);
+  --field-foreground: oklch(99.11% 0 0);
+  --field-placeholder: oklch(70.5% 0.015 286.067);
+  --focus: oklch(0.6204 0.195 253.83);
+  --foreground: oklch(99.11% 0 0);
+  --muted: oklch(70.5% 0.015 286.067);
+  --overlay: oklch(0.2103 0.0059 285.89);
+  --overlay-foreground: oklch(99.11% 0 0);
+  --scrollbar: oklch(70.5% 0.015 286.067);
+  --segment: oklch(0.3964 0.01 285.93);
+  --segment-foreground: oklch(99.11% 0 0);
+  --separator: oklch(25% 0.006 286.033);
+  --success: oklch(73.29% 0.1941 150.81);
+  --success-foreground: oklch(21.03% 0.0059 150.81);
+  --surface: oklch(0.2103 0.0059 285.89);
+  --surface-foreground: oklch(99.11% 0 0);
+  --surface-secondary: oklch(0.257 0.0037 286.14);
+  --surface-secondary-foreground: oklch(99.11% 0 0);
+  --surface-tertiary: oklch(0.2721 0.0024 247.91);
+  --surface-tertiary-foreground: oklch(99.11% 0 0);
+  --warning: oklch(0.8203 0.1388 76.34);
   --warning-foreground: oklch(21.03% 0.0059 72.33);
   --radius: 0.5rem;
   --field-radius: 0.75rem;
