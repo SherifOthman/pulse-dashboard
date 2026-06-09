@@ -3,35 +3,43 @@
  * HeroUI v3 Select is based on react-aria-components and uses
  * ListBox + ListBoxItem for options.
  */
-import { Select, SelectTrigger, SelectValue, SelectIndicator, SelectPopover, ListBox, ListBoxItem } from '@heroui/react'
+import {
+  ListBox,
+  ListBoxItem,
+  Select,
+  SelectIndicator,
+  SelectPopover,
+  SelectTrigger,
+  SelectValue,
+} from "@heroui/react";
 
 export type SelectOption = {
-  id: string
-  label: string
-}
+  id: string;
+  label: string;
+};
 
 type AppSelectProps = {
-  options: SelectOption[]
-  selectedKey?: string
-  onSelectionChange?: (key: string) => void
-  placeholder?: string
-  isDisabled?: boolean
-  className?: string
-  label?: string
-}
+  options: SelectOption[];
+  value?: string;
+  onChange?: (key: string) => void;
+  placeholder?: string;
+  isDisabled?: boolean;
+  className?: string;
+  label?: string;
+};
 
 export function AppSelect({
   options,
-  selectedKey,
-  onSelectionChange,
-  placeholder = 'اختر...',
+  value,
+  onChange,
+  placeholder = "اختر...",
   isDisabled,
-  className = '',
+  className = "",
 }: AppSelectProps) {
   return (
     <Select
-      selectedKey={selectedKey || null}
-      onSelectionChange={(key) => onSelectionChange?.(key as string)}
+      value={value || null}
+      onChange={(key) => onChange?.(key as string)}
       isDisabled={isDisabled}
       className={className}
       placeholder={placeholder}
@@ -43,12 +51,12 @@ export function AppSelect({
       <SelectPopover>
         <ListBox>
           {options.map((opt) => (
-            <ListBoxItem key={opt.id} id={opt.id}>
+            <ListBoxItem key={opt.id} id={opt.id} dir="rtl">
               {opt.label}
             </ListBoxItem>
           ))}
         </ListBox>
       </SelectPopover>
     </Select>
-  )
+  );
 }

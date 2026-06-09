@@ -9,7 +9,7 @@ type PaginatorProps = {
 export function Paginator({ page, total, onChange }: PaginatorProps) {
   if (total <= 1) return null;
 
-  const pages: (number | "..." )[] = [];
+  const pages: (number | "...")[] = [];
 
   if (total <= 7) {
     for (let i = 1; i <= total; i++) pages.push(i);
@@ -24,15 +24,16 @@ export function Paginator({ page, total, onChange }: PaginatorProps) {
   }
 
   return (
-    <Pagination.Root size="sm" aria-label="pagination">
+    <Pagination size="sm" className="justify-center" aria-label="pagination">
       <Pagination.Content>
+        {/* In RTL, "next" visually goes to the right → use NextIcon */}
         <Pagination.Item>
           <Pagination.Previous
-            isDisabled={page === 1}
-            onPress={() => onChange(page - 1)}
-            aria-label="الصفحة السابقة"
+            isDisabled={page === total}
+            onPress={() => onChange(page + 1)}
+            aria-label="الصفحة التالية"
           >
-            <Pagination.PreviousIcon />
+            <Pagination.NextIcon />
           </Pagination.Previous>
         </Pagination.Item>
 
@@ -43,26 +44,24 @@ export function Paginator({ page, total, onChange }: PaginatorProps) {
             </Pagination.Item>
           ) : (
             <Pagination.Item key={p}>
-              <Pagination.Link
-                isActive={p === page}
-                onPress={() => onChange(p)}
-              >
+              <Pagination.Link isActive={p === page} onPress={() => onChange(p)}>
                 {p}
               </Pagination.Link>
             </Pagination.Item>
           ),
         )}
 
+        {/* In RTL, "previous" visually goes to the left → use PreviousIcon */}
         <Pagination.Item>
           <Pagination.Next
-            isDisabled={page === total}
-            onPress={() => onChange(page + 1)}
-            aria-label="الصفحة التالية"
+            isDisabled={page === 1}
+            onPress={() => onChange(page - 1)}
+            aria-label="الصفحة السابقة"
           >
-            <Pagination.NextIcon />
+            <Pagination.PreviousIcon />
           </Pagination.Next>
         </Pagination.Item>
       </Pagination.Content>
-    </Pagination.Root>
+    </Pagination>
   );
 }

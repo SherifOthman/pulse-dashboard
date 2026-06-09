@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button, Input } from '@heroui/react'
-import { Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
+import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
 import { Select, SelectTrigger, SelectValue, SelectIndicator, SelectPopover, ListBox, ListBoxItem } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
@@ -55,8 +55,8 @@ export function CityFormModal({ isOpen, onClose, onSubmit, isLoading, initial }:
               <label className="text-sm font-medium text-foreground mb-1.5 block">المحافظة *</label>
               <Select
                 placeholder="اختر المحافظة"
-                selectedKey={governorateId || null}
-                onSelectionChange={(key) => setGovernorateId(key as string)}
+                value={governorateId || null}
+                onChange={(key) => setGovernorateId(key as string)}
                
               >
                 <SelectTrigger>
@@ -73,7 +73,7 @@ export function CityFormModal({ isOpen, onClose, onSubmit, isLoading, initial }:
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onPress={onClose} isDisabled={isLoading}>إلغاء</Button>
-            <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+            <Button variant="primary" onPress={handleSubmit} isPending={isLoading}>
               {initial ? 'حفظ التعديلات' : 'إضافة'}
             </Button>
           </ModalFooter>

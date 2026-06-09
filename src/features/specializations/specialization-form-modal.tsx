@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button, Input } from '@heroui/react'
-import { Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
+import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
 import type { SpecializationDto, CreateSpecializationDto } from '@/types'
 
 type Props = {
@@ -45,7 +45,7 @@ export function SpecializationFormModal({ isOpen, onClose, onSubmit, isLoading, 
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onPress={onClose} isDisabled={isLoading}>إلغاء</Button>
-            <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+            <Button variant="primary" onPress={handleSubmit} isPending={isLoading}>
               {initial ? 'حفظ التعديلات' : 'إضافة'}
             </Button>
           </ModalFooter>

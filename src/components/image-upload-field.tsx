@@ -38,8 +38,7 @@ export function ImageUploadField({ currentUrl, onUrlChange, label }: Props) {
           <img src={currentUrl} alt="" className="h-28 w-40 object-cover rounded-xl" />
           <Button
             size="sm"
-            variant="flat"
-            color="danger"
+            variant="danger-soft"
             isIconOnly
             className="absolute top-1 right-1 min-w-0 h-6 w-6"
             onPress={() => onUrlChange(null)}
@@ -49,13 +48,11 @@ export function ImageUploadField({ currentUrl, onUrlChange, label }: Props) {
         </div>
       ) : (
         <Button
-         
           className="w-full"
-          isLoading={uploading}
+          isDisabled={uploading}
           onPress={() => inputRef.current?.click()}
-          startContent={!uploading && <Upload className="h-4 w-4" />}
         >
-          {uploading ? 'جاري الرفع...' : 'اختر صورة'}
+          {uploading ? 'جاري الرفع...' : <><Upload className="h-4 w-4 inline" /> اختر صورة</>}
         </Button>
       )}
       <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />

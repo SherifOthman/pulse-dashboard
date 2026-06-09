@@ -29,7 +29,7 @@ export function CitiesPage() {
       <PageHeader
         title="المدن"
         subtitle={isLoading ? 'جاري التحميل...' : `${cities.length} مدينة مسجلة`}
-        action={<Button color="primary" onPress={() => setAddOpen(true)}>إضافة مدينة</Button>}
+        action={<Button variant="primary" onPress={() => setAddOpen(true)}>إضافة مدينة</Button>}
       />
 
       <div className="mb-6 flex items-center gap-3">
@@ -37,8 +37,8 @@ export function CitiesPage() {
           placeholder="فلترة بالمحافظة"
           className="max-w-xs"
          
-          selectedKey={filterGovId || null}
-          onSelectionChange={(key) => setFilterGovId(key as string || '')}
+          value={filterGovId || ''}
+          onChange={(key) => setFilterGovId(key as string || '')}
         >
           <SelectTrigger>
             <SelectValue />
@@ -87,14 +87,14 @@ export function CitiesPage() {
                 <tr key={city.id} className="border-divider border-b hover:bg-surface-secondary transition-colors">
                   <td className="px-4 py-3 font-medium text-foreground">{city.name}</td>
                   <td className="px-4 py-3 hidden md:table-cell">
-                    <Chip size="sm" variant="flat" color="default">{govMap.get(city.governorateId) || city.governorateId}</Chip>
+                    <Chip size="sm" variant="soft">{govMap.get(city.governorateId) || city.governorateId}</Chip>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
                       <Button size="sm" variant="ghost" isIconOnly onPress={() => setEditTarget(city)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" color="danger" isIconOnly onPress={() => setDeleteTarget(city)}>
+                      <Button size="sm" variant="danger-soft" isIconOnly onPress={() => setDeleteTarget(city)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -123,7 +123,6 @@ export function CitiesPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id, { onSuccess: () => { setDeleteTarget(null); toast.success('تم الحذف بنجاح') }, onError: () => toast.danger('حدث خطأ') })}
-        isLoading={deleteMutation.isPending}
         message={`هل أنت متأكد من حذف المدينة "${deleteTarget?.name}"؟`}
       />
     </div>

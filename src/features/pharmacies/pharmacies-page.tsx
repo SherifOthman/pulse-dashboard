@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Button, Input, Skeleton, Chip, toast } from '@heroui/react'
-import { Pencil, Trash2, Search, Pill } from 'lucide-react'
+import { Button, Skeleton, Chip, SearchField, toast } from '@heroui/react'
+import { Pencil, Trash2, Pill } from 'lucide-react'
 import { useGovernorates } from '@/hooks/use-governorates'
 import { useMe } from '@/features/auth/use-me'
 import { usePharmacies, useCreatePharmacy, useUpdatePharmacy, useDeletePharmacy } from './use-pharmacies'
@@ -37,23 +37,27 @@ export function PharmaciesPage() {
       <PageHeader
         title="الصيدليات"
         subtitle={data ? `${data.totalCount} صيدلية مسجلة` : 'جاري التحميل...'}
-        action={<Button color="primary" onPress={() => setAddOpen(true)}>إضافة صيدلية</Button>}
+        action={<Button variant="primary" onPress={() => setAddOpen(true)}>إضافة صيدلية</Button>}
       />
 
       <div className="mb-6 flex items-center gap-3 flex-wrap">
-        <Input
+        <SearchField.Root
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="البحث بالاسم..."
+          onChange={setSearchInput}
+          onSubmit={(val) => { setSearch(val); setPage(1) }}
+          onClear={() => { setSearch(''); setPage(1) }}
           className="w-56"
-         
-          onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(searchInput); setPage(1) } }}
-          endContent={<Search className="h-4 w-4 text-muted" />}
-        />
+        >
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder="البحث بالاسم..." />
+            <SearchField.ClearButton />
+          </SearchField.Group>
+        </SearchField.Root>
         <AppSelect
           options={governorates.map((g) => ({ id: g.id, label: g.name }))}
-          selectedKey={governorateId}
-          onSelectionChange={(val) => { setGovernorateId(val === governorateId ? '' : val); setPage(1) }}
+          value={governorateId}
+          onChange={(val) => { setGovernorateId(val === governorateId ? '' : val); setPage(1) }}
           placeholder="فلترة بالمحافظة"
           className="w-48"
         />
@@ -110,7 +114,7 @@ export function PharmaciesPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
-                    <Chip size="sm" color={pharmacy.isOpen ? 'success' : 'default'} variant="flat">
+                    <Chip size="sm" color={pharmacy.isOpen ? 'success' : 'default'} variant="soft">
                       {pharmacy.isOpen ? 'مفتوح' : 'مغلق'}
                     </Chip>
                   </td>
@@ -122,7 +126,7 @@ export function PharmaciesPage() {
                       <Button size="sm" variant="ghost" isIconOnly onPress={() => setEditTarget(pharmacy)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" color="danger" isIconOnly onPress={() => setDeleteTarget(pharmacy)}>
+                      <Button size="sm" variant="danger-soft" isIconOnly onPress={() => setDeleteTarget(pharmacy)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -141,7 +145,7 @@ export function PharmaciesPage() {
 
       <PharmacyFormModal isOpen={addOpen} onClose={() => setAddOpen(false)} onSubmit={(dto) => createMutation.mutate(dto, { onSuccess: () => { setAddOpen(false); toast.success('تم إضافة الصيدلية بنجاح') }, onError: () => toast.danger('حدث خطأ') })} isLoading={createMutation.isPending} />
       <PharmacyFormModal isOpen={!!editTarget} onClose={() => setEditTarget(null)} onSubmit={(dto) => editTarget && updateMutation.mutate({ id: editTarget.id, dto }, { onSuccess: () => { setEditTarget(null); toast.success('تم التعديل بنجاح') }, onError: () => toast.danger('حدث خطأ') })} isLoading={updateMutation.isPending} initial={editTarget} />
-      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id, { onSuccess: () => { setDeleteTarget(null); toast.success('تم الحذف بنجاح') }, onError: () => toast.danger('حدث خطأ') })} isLoading={deleteMutation.isPending} message={`هل أنت متأكد من حذف الصيدلية "${deleteTarget?.name}"؟`} />
+      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id, { onSuccess: () => { setDeleteTarget(null); toast.success('تم الحذف بنجاح') }, onError: () => toast.danger('حدث خطأ') })} message={`هل أنت متأكد من حذف الصيدلية "${deleteTarget?.name}"؟`} />
     </div>
   )
 }

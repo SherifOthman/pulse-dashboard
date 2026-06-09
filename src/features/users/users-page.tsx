@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, Skeleton, Chip, toast } from '@heroui/react'
-import { Pencil, Trash2, Users, Shield } from 'lucide-react'
+import { Pencil, Trash2, Users } from 'lucide-react'
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './use-users'
 import { UserFormModal } from './user-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
@@ -48,7 +48,7 @@ export function UsersPage() {
       <PageHeader
         title="المستخدمين"
         subtitle={isLoading ? 'جاري التحميل...' : `${users.length} مستخدم مسجل`}
-        action={<Button color="primary" onPress={() => setAddOpen(true)}>إضافة مستخدم</Button>}
+        action={<Button variant="primary" onPress={() => setAddOpen(true)}>إضافة مستخدم</Button>}
       />
 
       <div className="bg-surface border-divider rounded-2xl border shadow-sm overflow-hidden">
@@ -97,9 +97,8 @@ export function UsersPage() {
                   <td className="px-4 py-3 hidden md:table-cell">
                     <Chip
                       size="sm"
-                      variant="flat"
+                      variant="soft"
                       color={user.role === 'Admin' ? 'warning' : 'default'}
-                      startContent={<Shield className="h-3 w-3" />}
                     >
                       {user.role === 'Admin' ? 'مدير النظام' : 'مشرف'}
                     </Chip>
@@ -110,7 +109,7 @@ export function UsersPage() {
                         <Pencil className="h-4 w-4" />
                       </Button>
                       {user.role !== 'Admin' && (
-                        <Button size="sm" variant="ghost" color="danger" isIconOnly onPress={() => setDeleteTarget(user)}>
+                        <Button size="sm" variant="danger-soft" isIconOnly onPress={() => setDeleteTarget(user)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
@@ -125,7 +124,7 @@ export function UsersPage() {
 
       <UserFormModal isOpen={addOpen} onClose={() => setAddOpen(false)} onSubmit={handleCreate} isLoading={createMutation.isPending} />
       <UserFormModal isOpen={!!editTarget} onClose={() => setEditTarget(null)} onSubmit={handleUpdate} isLoading={updateMutation.isPending} initial={editTarget} />
-      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} isLoading={deleteMutation.isPending} message={`هل أنت متأكد من حذف المستخدم "${deleteTarget?.fullName}"؟`} />
+      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} message={`هل أنت متأكد من حذف المستخدم "${deleteTarget?.fullName}"؟`} />
     </div>
   )
 }

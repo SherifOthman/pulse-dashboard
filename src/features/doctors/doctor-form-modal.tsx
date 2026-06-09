@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button, Input } from '@heroui/react'
-import { Modal, ModalBackdrop, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
+import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
@@ -100,8 +100,8 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               <label className="text-sm font-medium text-foreground mb-1.5 block">التخصص</label>
               <AppSelect
                 options={specializations.map((s) => ({ id: s.id, label: s.name }))}
-                selectedKey={specializationId}
-                onSelectionChange={setSpecializationId}
+                value={specializationId}
+                onChange={setSpecializationId}
                 placeholder="اختر التخصص"
                 className="w-full"
               />
@@ -111,8 +111,8 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               <label className="text-sm font-medium text-foreground mb-1.5 block">المحافظة</label>
               <AppSelect
                 options={governorates.map((g) => ({ id: g.id, label: g.name }))}
-                selectedKey={governorateId}
-                onSelectionChange={(val) => { setGovernorateId(val); setCityId('') }}
+                value={governorateId}
+                onChange={(val) => { setGovernorateId(val); setCityId('') }}
                 placeholder="اختر المحافظة"
                 className="w-full"
               />
@@ -122,8 +122,8 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               <label className="text-sm font-medium text-foreground mb-1.5 block">المدينة</label>
               <AppSelect
                 options={cities.map((c) => ({ id: c.id, label: c.name }))}
-                selectedKey={cityId}
-                onSelectionChange={setCityId}
+                value={cityId}
+                onChange={setCityId}
                 placeholder="اختر المدينة"
                 isDisabled={!governorateId}
                 className="w-full"
@@ -134,8 +134,8 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               <label className="text-sm font-medium text-foreground mb-1.5 block">الجنس</label>
               <AppSelect
                 options={[{ id: 'Male', label: 'ذكر' }, { id: 'Female', label: 'أنثى' }]}
-                selectedKey={gender}
-                onSelectionChange={setGender}
+                value={gender}
+                onChange={setGender}
                 placeholder="اختر الجنس"
                 className="w-full"
               />
@@ -158,7 +158,7 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onPress={onClose} isDisabled={isLoading}>إلغاء</Button>
-            <Button color="primary" onPress={handleSubmit} isLoading={isLoading}>
+            <Button variant="primary" onPress={handleSubmit} isPending={isLoading}>
               {initial ? 'حفظ التعديلات' : 'إضافة'}
             </Button>
           </ModalFooter>

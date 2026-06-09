@@ -98,21 +98,22 @@ export function DoctorsPage() {
       />
 
       <div className="mb-6 flex items-center gap-3 flex-wrap">
-        <SearchField.Root
+        <SearchField
           value={searchInput}
           onChange={setSearchInput}
           className="w-56"
+          aria-label="البحث بالاسم"
         >
-          <SearchField.Group>
+          <SearchField.Group dir="rtl">
             <SearchField.SearchIcon />
             <SearchField.Input placeholder="البحث بالاسم..." />
             <SearchField.ClearButton />
           </SearchField.Group>
-        </SearchField.Root>
+        </SearchField>
         <AppSelect
           options={governorates.map((g) => ({ id: g.id, label: g.name }))}
-          selectedKey={governorateId}
-          onSelectionChange={(val) => {
+          value={governorateId}
+          onChange={(val) => {
             setGovernorateId(val === governorateId ? "" : val);
             setPage(1);
           }}
@@ -134,8 +135,9 @@ export function DoctorsPage() {
         )}
       </div>
 
-      <Table.Root variant="primary">
-        <Table.Content>
+      <Table variant="primary">
+        <Table.ScrollContainer>
+          <Table.Content>
           <Table.Header>
             <Table.Column isRowHeader className="text-right">
               الاسم
@@ -258,10 +260,11 @@ export function DoctorsPage() {
                 ))}
           </Table.Body>
         </Table.Content>
-      </Table.Root>
+        </Table.ScrollContainer>
+      </Table>
 
       {data && totalPages > 1 && (
-        <div className="flex justify-center py-4">
+        <div className="py-4">
           <Paginator page={page} total={totalPages} onChange={setPage} />
         </div>
       )}
@@ -283,7 +286,6 @@ export function DoctorsPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        isLoading={deleteMutation.isPending}
         message={`هل أنت متأكد من حذف الطبيب "${deleteTarget?.name}"؟`}
       />
     </div>

@@ -200,7 +200,7 @@ export type DashboardUser = {
 
 export type CreateDashboardUserDto = {
   email: string
-  password: string
+  password?: string
   fullName: string
   role?: string
 }

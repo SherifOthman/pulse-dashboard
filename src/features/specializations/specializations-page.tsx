@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Button, Skeleton, Input, toast } from '@heroui/react'
-import { Pencil, Trash2, Search, GraduationCap } from 'lucide-react'
+import { Button, Skeleton, SearchField, toast } from '@heroui/react'
+import { Pencil, Trash2, GraduationCap } from 'lucide-react'
 import { useSpecializations, useCreateSpecialization, useUpdateSpecialization, useDeleteSpecialization } from './use-specializations'
 import { SpecializationFormModal } from './specialization-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
@@ -27,18 +27,21 @@ export function SpecializationsPage() {
       <PageHeader
         title="التخصصات"
         subtitle={isLoading ? 'جاري التحميل...' : `${all.length} تخصص مسجل`}
-        action={<Button color="primary" onPress={() => setAddOpen(true)}>إضافة تخصص</Button>}
+        action={<Button variant="primary" onPress={() => setAddOpen(true)}>إضافة تخصص</Button>}
       />
 
       <div className="mb-6 flex items-center gap-3">
-        <Input
+        <SearchField.Root
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="البحث في التخصصات..."
-          className="max-w-xs"
-         
-          endContent={<Search className="h-4 w-4 text-muted" />}
-        />
+          onChange={setSearch}
+          className="w-56"
+        >
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder="البحث في التخصصات..." />
+            <SearchField.ClearButton />
+          </SearchField.Group>
+        </SearchField.Root>
         {search && <Button variant="ghost" size="sm" onPress={() => setSearch('')}>مسح</Button>}
       </div>
 
@@ -85,7 +88,7 @@ export function SpecializationsPage() {
                       <Button size="sm" variant="ghost" isIconOnly onPress={() => setEditTarget(spec)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" color="danger" isIconOnly onPress={() => setDeleteTarget(spec)}>
+                      <Button size="sm" variant="danger-soft" isIconOnly onPress={() => setDeleteTarget(spec)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -114,7 +117,6 @@ export function SpecializationsPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id, { onSuccess: () => { setDeleteTarget(null); toast.success('تم الحذف بنجاح') }, onError: () => toast.danger('حدث خطأ') })}
-        isLoading={deleteMutation.isPending}
         message={`هل أنت متأكد من حذف التخصص "${deleteTarget?.name}"؟`}
       />
     </div>

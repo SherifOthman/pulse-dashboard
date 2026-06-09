@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Button, Input, Skeleton, toast } from '@heroui/react'
-import { Pencil, Trash2, Search, FlaskConical } from 'lucide-react'
+import { Button, Skeleton, SearchField, toast } from '@heroui/react'
+import { Pencil, Trash2, FlaskConical } from 'lucide-react'
 import { useMe } from '@/features/auth/use-me'
 import { useLabs, useCreateLab, useUpdateLab, useDeleteLab } from './use-labs'
 import { LabFormModal } from './lab-form-modal'
@@ -31,19 +31,23 @@ export function LabsPage() {
       <PageHeader
         title="المختبرات"
         subtitle={data ? `${data.totalCount} مختبر مسجل` : 'جاري التحميل...'}
-        action={<Button color="primary" onPress={() => setAddOpen(true)}>إضافة مختبر</Button>}
+        action={<Button variant="primary" onPress={() => setAddOpen(true)}>إضافة مختبر</Button>}
       />
 
       <div className="mb-6 flex items-center gap-3">
-        <Input
+        <SearchField.Root
           value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="البحث بالاسم..."
-          className="max-w-xs"
-         
-          onKeyDown={(e) => { if (e.key === 'Enter') { setSearch(searchInput); setPage(1) } }}
-          endContent={<Search className="h-4 w-4 text-muted" />}
-        />
+          onChange={setSearchInput}
+          onSubmit={(val) => { setSearch(val); setPage(1) }}
+          onClear={() => { setSearch(''); setPage(1) }}
+          className="w-56"
+        >
+          <SearchField.Group>
+            <SearchField.SearchIcon />
+            <SearchField.Input placeholder="البحث بالاسم..." />
+            <SearchField.ClearButton />
+          </SearchField.Group>
+        </SearchField.Root>
         {search && <Button variant="ghost" size="sm" onPress={() => { setSearch(''); setSearchInput(''); setPage(1) }}>مسح</Button>}
       </div>
 
@@ -101,7 +105,7 @@ export function LabsPage() {
                       <Button size="sm" variant="ghost" isIconOnly onPress={() => setEditTarget(lab)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" color="danger" isIconOnly onPress={() => setDeleteTarget(lab)}>
+                      <Button size="sm" variant="danger-soft" isIconOnly onPress={() => setDeleteTarget(lab)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -120,7 +124,7 @@ export function LabsPage() {
 
       <LabFormModal isOpen={addOpen} onClose={() => setAddOpen(false)} onSubmit={(dto) => createMutation.mutate(dto, { onSuccess: () => { setAddOpen(false); toast.success('تم الإضافة بنجاح') }, onError: () => toast.danger('حدث خطأ') })} isLoading={createMutation.isPending} />
       <LabFormModal isOpen={!!editTarget} onClose={() => setEditTarget(null)} onSubmit={(dto) => editTarget && updateMutation.mutate({ id: editTarget.id, dto }, { onSuccess: () => { setEditTarget(null); toast.success('تم التعديل بنجاح') }, onError: () => toast.danger('حدث خطأ') })} isLoading={updateMutation.isPending} initial={editTarget} />
-      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id, { onSuccess: () => { setDeleteTarget(null); toast.success('تم الحذف بنجاح') }, onError: () => toast.danger('حدث خطأ') })} isLoading={deleteMutation.isPending} message={`هل أنت متأكد من حذف المختبر "${deleteTarget?.name}"؟`} />
+      <ConfirmModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id, { onSuccess: () => { setDeleteTarget(null); toast.success('تم الحذف بنجاح') }, onError: () => toast.danger('حدث خطأ') })} message={`هل أنت متأكد من حذف المختبر "${deleteTarget?.name}"؟`} />
     </div>
   )
 }
