@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { Button } from '@heroui/react'
+import { useRef, useState } from 'react'
+import { Skeleton } from '@heroui/react'
 import { Upload, X } from 'lucide-react'
 import api from '@/services/api'
 
@@ -7,11 +7,22 @@ type Props = {
   currentUrl: string | null
   onUrlChange: (url: string | null) => void
   label: string
+  aspectRatio?: 'square' | 'cover'
 }
 
-export function ImageUploadField({ currentUrl, onUrlChange, label }: Props) {
+export function ImageUploadField({
+  currentUrl,
+  onUrlChange,
+  label,
+  aspectRatio = 'square',
+}: Props) {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const isSquare = aspectRatio === 'square'
+  const containerClass = isSquare
+    ? 'h-24 w-24'
+    : 'h-24 w-full'
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -31,31 +42,44 @@ export function ImageUploadField({ currentUrl, onUrlChange, label }: Props) {
   }
 
   return (
-    <div>
-      <label className="text-sm font-medium text-foreground mb-1.5 block">{label}</label>
-      {currentUrl ? (
-        <div className="relative inline-block rounded-xl overflow-hidden border border-divider">
-          <img src={currentUrl} alt="" className="h-28 w-40 object-cover rounded-xl" />
-          <Button
-            size="sm"
-            variant="danger-soft"
-            isIconOnly
-            className="absolute top-1 right-1 min-w-0 h-6 w-6"
-            onPress={() => onUrlChange(null)}
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-medium text-foreground">{label}</label>
+
+      {uploading ? (
+        <Skeleton className={`${containerClass} rounded-xl`} />
+      ) : currentUrl ? (
+        <div className={`relative ${containerClass} rounded-xl overflow-hidden border border-divider`}>
+          <img
+            src={currentUrl}
+            alt={label}
+            className="h-full w-full object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => onUrlChange(null)}
+            className="absolute top-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white shadow-sm hover:bg-danger/90 transition-colors"
           >
             <X className="h-3 w-3" />
-          </Button>
+          </button>
         </div>
       ) : (
-        <Button
-          className="w-full"
-          isDisabled={uploading}
-          onPress={() => inputRef.current?.click()}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className={`${containerClass} flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-divider bg-surface-secondary text-muted hover:border-primary hover:text-primary transition-colors`}
         >
-          {uploading ? 'جاري الرفع...' : <><Upload className="h-4 w-4 inline" /> اختر صورة</>}
-        </Button>
+          <Upload className="h-5 w-5" />
+          <span className="text-xs font-medium">رفع صورة</span>
+        </button>
       )}
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
     </div>
   )
 }

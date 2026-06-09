@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { PaginatedResponse, DoctorDto, CreateDoctorDto } from '@/types'
+import type { PaginatedResponse, DoctorDto, DoctorDetailsDto, CreateDoctorDto } from '@/types'
 
 export type DoctorsQuery = {
   page?: number
@@ -10,6 +10,11 @@ export type DoctorsQuery = {
 
 export async function getDoctors(query: DoctorsQuery): Promise<PaginatedResponse<DoctorDto>> {
   const { data } = await api.get('/doctors', { params: query })
+  return data
+}
+
+export async function getDoctorDetails(id: string): Promise<DoctorDetailsDto> {
+  const { data } = await api.get(`/doctors/${id}`)
   return data
 }
 

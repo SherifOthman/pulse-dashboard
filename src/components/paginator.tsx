@@ -24,16 +24,15 @@ export function Paginator({ page, total, onChange }: PaginatorProps) {
   }
 
   return (
-    <Pagination size="sm" className="justify-center" aria-label="pagination">
+    <Pagination size="sm" className="justify-center" aria-label="pagination" dir="ltr">
       <Pagination.Content>
-        {/* In RTL, "next" visually goes to the right → use NextIcon */}
         <Pagination.Item>
           <Pagination.Previous
-            isDisabled={page === total}
-            onPress={() => onChange(page + 1)}
-            aria-label="الصفحة التالية"
+            isDisabled={page === 1}
+            onPress={() => onChange(page - 1)}
+            aria-label="الصفحة السابقة"
           >
-            <Pagination.NextIcon />
+            <Pagination.PreviousIcon />
           </Pagination.Previous>
         </Pagination.Item>
 
@@ -51,14 +50,13 @@ export function Paginator({ page, total, onChange }: PaginatorProps) {
           ),
         )}
 
-        {/* In RTL, "previous" visually goes to the left → use PreviousIcon */}
         <Pagination.Item>
           <Pagination.Next
-            isDisabled={page === 1}
-            onPress={() => onChange(page - 1)}
-            aria-label="الصفحة السابقة"
+            isDisabled={page === total}
+            onPress={() => onChange(page + 1)}
+            aria-label="الصفحة التالية"
           >
-            <Pagination.PreviousIcon />
+            <Pagination.NextIcon />
           </Pagination.Next>
         </Pagination.Item>
       </Pagination.Content>

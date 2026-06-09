@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getDoctors, createDoctor, updateDoctor, deleteDoctor } from './doctors-api'
+import { getDoctors, getDoctorDetails, createDoctor, updateDoctor, deleteDoctor } from './doctors-api'
 import type { DoctorsQuery } from './doctors-api'
 import type { CreateDoctorDto } from '@/types'
 
@@ -8,6 +8,14 @@ export function useDoctors(query: DoctorsQuery) {
     queryKey: ['doctors', query],
     queryFn: () => getDoctors(query),
     placeholderData: (prev) => prev,
+  })
+}
+
+export function useDoctorDetails(id: string | null) {
+  return useQuery({
+    queryKey: ['doctor-details', id],
+    queryFn: () => getDoctorDetails(id!),
+    enabled: !!id,
   })
 }
 

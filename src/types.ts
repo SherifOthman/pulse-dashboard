@@ -108,6 +108,65 @@ export type DoctorDto = {
   createdBy: string | null
 }
 
+// ── Doctor detail types ───────────────────────────────────────────────────────
+
+export type WorkingDayDto = {
+  day: number        // 0=Sunday … 6=Saturday
+  startTime: string  // "HH:mm"
+  endTime: string    // "HH:mm"
+}
+
+export type PhoneNumberDto = {
+  number: string
+  type: string | null
+}
+
+export type ServiceDto = {
+  name: string
+}
+
+export type BranchDto = {
+  id: string
+  name: string
+  address: string | null
+  profileImageUrl: string | null
+  phoneNumbers: PhoneNumberDto[]
+  workingDays: WorkingDayDto[]
+}
+
+export type TestimonialDto = {
+  id: string
+  userName: string | null
+  userImageUrl: string | null
+  rating: number
+  text: string
+  createdAt: string
+}
+
+export type DoctorDetailsDto = {
+  id: string
+  name: string
+  profileImageUrl: string | null
+  coverImageUrl: string | null
+  description: string | null
+  address: string | null
+  governorate: string
+  city: string
+  latitude: number | null
+  longitude: number | null
+  averageRating: number
+  totalRatings: number
+  isFavorite: boolean
+  hasUserReviewed: boolean
+  workingDays: WorkingDayDto[]
+  phoneNumbers: PhoneNumberDto[]
+  branches: BranchDto[]
+  testimonials: TestimonialDto[]
+  services: ServiceDto[]
+  specialization: string
+  visitPrice: number | null
+}
+
 export type CreateDoctorDto = {
   name: string
   specializationId?: string
