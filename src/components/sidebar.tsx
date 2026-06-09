@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useMe } from '@/features/auth/use-me'
+import { useAuthStore } from '@/auth-store'
 import { Button, Separator, Tooltip } from '@heroui/react'
 import {
   LayoutDashboard, Stethoscope, Pill, FlaskConical,
-  Scan, Building2, GraduationCap, Menu, HeartPulse, Shield, User,
+  Scan, Building2, GraduationCap, Menu, HeartPulse, Shield, User, LogOut,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -50,11 +51,17 @@ function linkClass(active: boolean, collapsed: boolean) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function Sidebar({ collapsed, onToggleCollapse, onLinkClick }: SidebarProps) {
-  const location = useLocation()
-  const navigate  = useNavigate()
-  const role      = useMe().data?.role ?? null
+  const location     = useLocation()
+  const navigate     = useNavigate()
+  const role         = useMe().data?.role ?? null
+  const clearSession = useAuthStore((s) => s.clearSession)
 
   const items = NAV_ITEMS.filter((item) => !item.adminOnly || role === 'Admin')
+
+  const handleLogout = () => {
+    clearSession()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -103,6 +110,32 @@ export function Sidebar({ collapsed, onToggleCollapse, onLinkClick }: SidebarPro
           })}
         </ul>
       </nav>
+
+      {/* Logout */}
+      <Separator />
+      <div className="px-2 py-3">
+        {collapsed ? (
+          <Tooltip delay={300}>
+            <Tooltip.Trigger className="w-full">
+              <button
+                onClick={handleLogout}
+                className="w-full flex justify-center items-center rounded-lg px-3 py-2.5 text-danger hover:bg-danger/10 transition-colors"
+              >
+                <LogOut className="h-5 w-5 shrink-0" />
+              </button>
+            </Tooltip.Trigger>
+            <Tooltip.Content placement="right"><p>تسجيل الخروج</p></Tooltip.Content>
+          </Tooltip>
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-danger hover:bg-danger/10 transition-colors"
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            <span className="text-sm font-medium">تسجيل الخروج</span>
+          </button>
+        )}
+      </div>
     </div>
   )
 }
