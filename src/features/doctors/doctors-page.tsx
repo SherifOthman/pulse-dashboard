@@ -93,11 +93,6 @@ export function DoctorsPage() {
       <PageHeader
         title="الأطباء"
         subtitle={data ? `${data.totalCount} طبيب مسجل` : "جاري التحميل..."}
-        action={
-          <Button variant="primary" onPress={() => setAddOpen(true)}>
-            إضافة طبيب
-          </Button>
-        }
       />
 
       {/* ── Filters ── */}
@@ -139,6 +134,10 @@ export function DoctorsPage() {
             مسح الفلاتر
           </Button>
         )}
+
+        <Button variant="primary" onPress={() => setAddOpen(true)} className="mr-auto">
+          إضافة طبيب
+        </Button>
       </div>
 
       {/* ── Table ── */}
