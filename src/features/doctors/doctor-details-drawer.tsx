@@ -17,6 +17,15 @@ import {
 import type { DoctorDto, WorkingDayDto } from '@/types'
 import { useDoctorDetails } from './use-doctors'
 
+// ── Time formatter: "HH:mm" → "h:mm AM/PM" ────────────────────────────────────
+function formatTime(hhmm: string): string {
+  const [h, m] = hhmm.split(':').map(Number)
+  if (isNaN(h) || isNaN(m)) return hhmm
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h % 12 || 12
+  return `${hour12}:${m.toString().padStart(2, '0')} ${period}`
+}
+
 // ── Day name map (0=Sunday … 6=Saturday) ──────────────────────────────────────
 const DAY_NAMES: Record<number, string> = {
   0: 'الأحد',
@@ -62,7 +71,7 @@ function WorkingDayRow({ day }: { day: WorkingDayDto }) {
     <div className="flex items-center justify-between rounded-lg bg-surface-secondary px-3 py-2">
       <span className="text-sm font-medium text-foreground">{DAY_NAMES[day.day] ?? `يوم ${day.day}`}</span>
       <span className="text-sm text-muted font-mono" dir="ltr">
-        {day.startTime} – {day.endTime}
+        {formatTime(day.startTime)} – {formatTime(day.endTime)}
       </span>
     </div>
   )
@@ -288,7 +297,7 @@ export function DoctorDetailsDrawer({ doctor, isOpen, onClose, onEdit, onDelete 
                                 {br.workingDays.map((d) => (
                                   <div key={d.day} className="flex justify-between text-xs">
                                     <span className="text-foreground">{DAY_NAMES[d.day]}</span>
-                                    <span className="text-muted font-mono" dir="ltr">{d.startTime} – {d.endTime}</span>
+                                    <span className="text-muted font-mono" dir="ltr">{formatTime(d.startTime)} – {formatTime(d.endTime)}</span>
                                   </div>
                                 ))}
                               </div>
