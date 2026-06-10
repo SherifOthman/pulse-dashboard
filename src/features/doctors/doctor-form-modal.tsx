@@ -181,7 +181,7 @@ export function DoctorFormModal({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="نبذة عن الطبيب وخبراته..."
                 rows={4}
-                className="w-full resize-none rounded-xl border border-divider bg-field px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                className="input w-full resize-none rounded-xl px-3 py-2.5"
               />
             </Field>
 
@@ -280,46 +280,50 @@ export function DoctorFormModal({
                   return (
                     <div
                       key={d.day}
-                      className={`flex items-center gap-2 rounded-xl border px-3 py-2 transition-colors ${wd.enabled ? 'border-divider bg-surface' : 'border-dashed border-divider bg-transparent'}`}
+                      className={`rounded-xl border px-3 py-2 transition-colors ${wd.enabled ? 'border-divider bg-surface' : 'border-dashed border-divider bg-transparent'}`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={wd.enabled}
-                        onChange={(e) =>
-                          setWorkingDays((prev) =>
-                            prev.map((x) => (x.day === d.day ? { ...x, enabled: e.target.checked } : x))
-                          )
-                        }
-                        className="h-4 w-4 accent-primary rounded"
-                      />
-                      <span className="min-w-14 text-sm text-foreground">{d.name}</span>
-                      {wd.enabled && (
-                        <div className="flex items-center gap-1">
-                          <Input
-                            type="time"
-                            variant="secondary"
-                            value={wd.startTime}
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={wd.enabled}
                             onChange={(e) =>
                               setWorkingDays((prev) =>
-                                prev.map((x) => (x.day === d.day ? { ...x, startTime: e.target.value } : x))
+                                prev.map((x) => (x.day === d.day ? { ...x, enabled: e.target.checked } : x))
                               )
                             }
-                            className="w-28"
+                            className="h-4 w-4 accent-primary rounded"
                           />
-                          <span className="text-muted">–</span>
-                          <Input
-                            type="time"
-                            variant="secondary"
-                            value={wd.endTime}
-                            onChange={(e) =>
-                              setWorkingDays((prev) =>
-                                prev.map((x) => (x.day === d.day ? { ...x, endTime: e.target.value } : x))
-                              )
-                            }
-                            className="w-28"
-                          />
+                          <span className="text-sm text-foreground min-w-14">{d.name}</span>
                         </div>
-                      )}
+                        {wd.enabled && (
+                          <div className="flex items-center gap-1 flex-1 min-w-0">
+                            <Input
+                              type="time"
+                              variant="secondary"
+                              value={wd.startTime}
+                              onChange={(e) =>
+                                setWorkingDays((prev) =>
+                                  prev.map((x) => (x.day === d.day ? { ...x, startTime: e.target.value } : x))
+                                )
+                              }
+                              className="min-w-0 flex-1"
+                            />
+                            <span className="text-muted shrink-0">–</span>
+                            <Input
+                              type="time"
+                              variant="secondary"
+                              value={wd.endTime}
+                              onChange={(e) =>
+                                setWorkingDays((prev) =>
+                                  prev.map((x) => (x.day === d.day ? { ...x, endTime: e.target.value } : x))
+                                )
+                              }
+                              className="min-w-0 flex-1"
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )
                 })}
