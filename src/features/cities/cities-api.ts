@@ -2,7 +2,8 @@ import api from '@/services/api'
 import type { CityDto, CreateCityDto } from './types'
 
 export async function getCities(governorateId?: string): Promise<CityDto[]> {
-  const params = governorateId ? { governorateId } : {}
+  const params: Record<string, string> = { all: 'true' }
+  if (governorateId) params.governorateId = governorateId
   const { data } = await api.get('/cities', { params })
   return data
 }
