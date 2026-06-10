@@ -15,25 +15,17 @@ import {
 } from '@heroui/react'
 import { Time } from '@internationalized/date'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
-import { Building2 } from 'lucide-react'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
 import { ImageUploadField } from '@/components/image-upload-field'
-import type {
-  GovernorateDto,
-  SpecializationDto,
-  CityDto,
-  DoctorDto,
-  CreateDoctorDto,
-} from '@/types'
+import type { GovernorateDto, CityDto, CreateBranchDto } from '@/types'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (dto: CreateDoctorDto) => void
+  onSubmit: (dto: CreateBranchDto) => void
   isLoading?: boolean
-  initial?: DoctorDto | null
+  initial?: (CreateBranchDto & { id?: string }) | null
 }
 
 const workingDaySchema = z.object({
@@ -43,21 +35,19 @@ const workingDaySchema = z.object({
   enabled: z.boolean(),
 })
 
-const doctorFormSchema = z.object({
-  name: z.string().min(1, 'الاسم مطلوب'),
-  specializationId: z.string().optional(),
+const branchFormSchema = z.object({
+  name: z.string().min(1, 'اسم الفرع مطلوب'),
   governorateId: z.string().optional(),
   cityId: z.string().optional(),
-  description: z.string().optional(),
   address: z.string().optional(),
+  description: z.string().optional(),
   visitPrice: z.string().optional(),
-  gender: z.string().optional(),
   profileImageUrl: z.string().optional(),
   coverImageUrl: z.string().optional(),
   workingDays: z.array(workingDaySchema),
 })
 
-type FormValues = z.infer<typeof doctorFormSchema>
+type FormValues = z.infer<typeof branchFormSchema>
 
 const defaultWorkingDays: FormValues['workingDays'] = Array.from({ length: 7 }, (_, i) => ({
   day: i,
@@ -80,19 +70,16 @@ function Field({ label, required, children }: { label: string; required?: boolea
   )
 }
 
-export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial }: Props) {
-  const navigate = useNavigate()
+export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial }: Props) {
   const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>({
-    resolver: zodResolver(doctorFormSchema),
+    resolver: zodResolver(branchFormSchema),
     defaultValues: {
       name: '',
-      specializationId: '',
       governorateId: '',
       cityId: '',
-      description: '',
       address: '',
+      description: '',
       visitPrice: '',
-      gender: '',
       profileImageUrl: '',
       coverImageUrl: '',
       workingDays: defaultWorkingDays,
@@ -106,11 +93,6 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
     queryFn: async () => (await api.get('/governorates')).data,
   })
 
-  const { data: specializations = [] } = useQuery<SpecializationDto[]>({
-    queryKey: ['specializations'],
-    queryFn: async () => (await api.get('/specializations')).data,
-  })
-
   const { data: cities = [] } = useQuery<CityDto[]>({
     queryKey: ['cities-by-gov', governorateId],
     queryFn: async () => (await api.get('/cities', { params: { governorateId } })).data,
@@ -119,35 +101,17 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
 
   useEffect(() => {
     if (isOpen) {
-      if (initial) {
-        reset({
-          name: initial.name || '',
-          specializationId: '',
-          governorateId: initial.governorateId || '',
-          cityId: initial.cityId || '',
-          description: initial.description || '',
-          address: initial.address || '',
-          visitPrice: initial.visitPrice?.toString() || '',
-          gender: initial.gender || '',
-          profileImageUrl: initial.profileImageUrl || '',
-          coverImageUrl: '',
-          workingDays: defaultWorkingDays,
-        })
-      } else {
-        reset({
-          name: '',
-          specializationId: '',
-          governorateId: '',
-          cityId: '',
-          description: '',
-          address: '',
-          visitPrice: '',
-          gender: '',
-          profileImageUrl: '',
-          coverImageUrl: '',
-          workingDays: defaultWorkingDays,
-        })
-      }
+      reset({
+        name: initial?.name || '',
+        governorateId: '',
+        cityId: '',
+        address: initial?.address || '',
+        description: initial?.description || '',
+        visitPrice: initial?.visitPrice?.toString() || '',
+        profileImageUrl: initial?.profileImageUrl || '',
+        coverImageUrl: initial?.coverImageUrl || '',
+        workingDays: defaultWorkingDays,
+      })
     }
   }, [initial, isOpen, reset])
 
@@ -155,12 +119,10 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
     const enabledDays = data.workingDays.filter((d) => d.enabled)
     onSubmit({
       name: data.name.trim(),
-      specializationId: data.specializationId || undefined,
       cityId: data.cityId || undefined,
-      description: data.description?.trim() || undefined,
       address: data.address?.trim() || undefined,
+      description: data.description?.trim() || undefined,
       visitPrice: data.visitPrice ? parseFloat(data.visitPrice) : undefined,
-      gender: data.gender || undefined,
       profileImageUrl: data.profileImageUrl || undefined,
       coverImageUrl: data.coverImageUrl || undefined,
       workingDays: enabledDays.length > 0 ? enabledDays.map((d) => ({ day: d.day, startTime: d.startTime, endTime: d.endTime })) : undefined,
@@ -179,7 +141,7 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
           <ModalCloseTrigger />
           <ModalHeader>
             <ModalHeading>
-              {initial ? 'تعديل بيانات الطبيب' : 'إضافة طبيب جديد'}
+              {initial?.id ? 'تعديل الفرع' : 'إضافة فرع جديد'}
             </ModalHeading>
           </ModalHeader>
 
@@ -220,8 +182,8 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               name="name"
               control={control}
               render={({ field }) => (
-                <Field label="الاسم" required>
-                  <Input {...field} variant="secondary" placeholder="د. محمد أحمد" />
+                <Field label="اسم الفرع" required>
+                  <Input {...field} variant="secondary" placeholder="فرع المهندسين" />
                 </Field>
               )}
             />
@@ -232,44 +194,10 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               control={control}
               render={({ field }) => (
                 <Field label="الوصف">
-                  <TextArea {...field} placeholder="نبذة عن الطبيب وخبراته..." rows={4} variant="secondary" />
+                  <TextArea {...field} placeholder="وصف الفرع..." rows={3} variant="secondary" />
                 </Field>
               )}
             />
-
-            {/* ── Specialization + Gender ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Controller
-                name="specializationId"
-                control={control}
-                render={({ field }) => (
-                  <Field label="التخصص">
-                    <AppSelect
-                      variant="secondary"
-                      options={specializations.map((s) => ({ id: s.id, label: s.name }))}
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                      placeholder="اختر التخصص"
-                    />
-                  </Field>
-                )}
-              />
-              <Controller
-                name="gender"
-                control={control}
-                render={({ field }) => (
-                  <Field label="الجنس">
-                    <AppSelect
-                      variant="secondary"
-                      options={[{ id: 'Male', label: 'ذكر' }, { id: 'Female', label: 'أنثى' }]}
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                      placeholder="اختر الجنس"
-                    />
-                  </Field>
-                )}
-              />
-            </div>
 
             {/* ── Governorate + City ── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -322,7 +250,7 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                 control={control}
                 render={({ field }) => (
                   <Field label="العنوان">
-                    <Input {...field} variant="secondary" placeholder="عنوان العيادة" />
+                    <Input {...field} variant="secondary" placeholder="عنوان الفرع" />
                   </Field>
                 )}
               />
@@ -383,18 +311,6 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                 ))}
               </div>
             </div>
-
-            {/* ── Branches link ── */}
-            {initial && (
-              <Button
-                variant="ghost"
-                onPress={() => { onClose(); navigate(`/doctors/${initial.id}/branches`) }}
-                className="w-full justify-start gap-2"
-              >
-                <Building2 className="h-4 w-4" />
-                إدارة الفروع
-              </Button>
-            )}
           </ModalBody>
 
           <ModalFooter>
@@ -407,7 +323,7 @@ export function DoctorFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               isPending={isLoading}
               isDisabled={!watch('name')?.trim()}
             >
-              {initial ? 'حفظ التعديلات' : 'إضافة الطبيب'}
+              {initial?.id ? 'حفظ التعديلات' : 'إضافة الفرع'}
             </Button>
           </ModalFooter>
         </ModalDialog>

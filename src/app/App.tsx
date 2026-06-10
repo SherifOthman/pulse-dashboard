@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/dashboard-layout'
 import { LoginPage } from '@/features/auth/login-page'
 import { OverviewPage } from '@/features/dashboard/overview-page'
 import { DoctorsPage } from '@/features/doctors/doctors-page'
+import { BranchesPage } from '@/features/doctors/branches-page'
 import { PharmaciesPage } from '@/features/pharmacies/pharmacies-page'
 import { LabsPage } from '@/features/labs/labs-page'
 import { RadiologyPage } from '@/features/radiology/radiology-page'
@@ -35,6 +36,7 @@ export default function App() {
           >
             <Route index element={<OverviewPage />} />
             <Route path="doctors" element={<DoctorsPage />} />
+            <Route path="doctors/:id/branches" element={<BranchesPage />} />
             <Route path="pharmacies" element={<PharmaciesPage />} />
             <Route path="labs" element={<LabsPage />} />
             <Route path="radiology" element={<RadiologyPage />} />

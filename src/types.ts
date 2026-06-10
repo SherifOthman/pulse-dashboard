@@ -167,9 +167,43 @@ export type DoctorDetailsDto = {
   visitPrice: number | null
 }
 
+export type BranchListItem = {
+  id: string
+  name: string
+  profileImageUrl: string | null
+  governorate: string | null
+  city: string | null
+  visitPrice: number | null
+  isOpen: boolean
+}
+
+export type BranchDetails = {
+  id: string
+  name: string
+  description: string | null
+  address: string | null
+  profileImageUrl: string | null
+  coverImageUrl: string | null
+  governorate: string
+  city: string
+  cityId: string
+  visitPrice: number | null
+  latitude: number | null
+  longitude: number | null
+  workingDays: WorkingDayDto[]
+  phoneNumbers: PhoneNumberDto[]
+}
+
 export type CreateBranchDto = {
   name: string
+  cityId?: string
   address?: string
+  description?: string
+  profileImageUrl?: string
+  coverImageUrl?: string
+  visitPrice?: number
+  latitude?: number
+  longitude?: number
   workingDays?: WorkingDayDto[]
   phoneNumbers?: PhoneNumberDto[]
 }
