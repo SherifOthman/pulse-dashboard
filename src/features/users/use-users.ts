@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getUsers, createUser, updateUser, deleteUser } from './users-api'
-import type { UpdateDashboardUserDto } from '@/types'
+import type { UpdateDashboardUserDto } from './types'
 
 export function useUsers() {
   return useQuery({

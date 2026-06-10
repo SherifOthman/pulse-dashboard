@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { SpecializationDto, CreateSpecializationDto } from '@/types'
+import type { SpecializationDto, CreateSpecializationDto } from './types'
 
 export async function getSpecializations(): Promise<SpecializationDto[]> {
   const { data } = await api.get('/specializations')

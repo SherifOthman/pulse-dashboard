@@ -1,0 +1,171 @@
+import { useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useForm, FormProvider } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Button, Breadcrumbs, Separator, toast } from '@heroui/react'
+import { Building2, Save } from 'lucide-react'
+import { useDoctorDetails, useCreateDoctor, useUpdateDoctor } from './use-doctors'
+import { DoctorFormFields } from './components/doctor-form-fields'
+import {
+  doctorFormSchema,
+  doctorFormDefaults,
+  type DoctorFormValues,
+} from './components/doctor-form-schema'
+import {
+  mapWorkingDaysToForm,
+  formToWorkingDays,
+} from './components/working-days-field'
+
+export function DoctorFormPage() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const isEdit = !!id
+
+  const { data: existing, isLoading: loadingExisting } = useDoctorDetails(isEdit ? id : null)
+  const createMutation = useCreateDoctor()
+  const updateMutation = useUpdateDoctor()
+
+  const isPending = createMutation.isPending || updateMutation.isPending
+
+  const methods = useForm<DoctorFormValues>({
+    resolver: zodResolver(doctorFormSchema),
+    defaultValues: doctorFormDefaults,
+  })
+
+  const { handleSubmit, reset, watch } = methods
+
+  // Populate form when editing
+  useEffect(() => {
+    if (existing) {
+      reset({
+        name: existing.name,
+        specializationId: '',
+        governorateId: '',
+        cityId: existing.cityId || '',
+        description: existing.description || '',
+        address: existing.address || '',
+        visitPrice: existing.visitPrice?.toString() || '',
+        gender: existing.gender?.toString() || '',
+        profileImageUrl: existing.profileImageUrl || '',
+        coverImageUrl: existing.coverImageUrl || '',
+        workingDays: mapWorkingDaysToForm(existing.workingDays),
+        phoneNumbers: existing.phoneNumbers.map((p) => ({
+          number: p.number,
+          type: p.type || '',
+        })),
+      })
+    }
+  }, [existing, reset])
+
+  const onSubmit = (data: DoctorFormValues) => {
+    const dto = {
+      name: data.name.trim(),
+      specializationId: data.specializationId || undefined,
+      cityId: data.cityId || undefined,
+      description: data.description?.trim() || undefined,
+      address: data.address?.trim() || undefined,
+      visitPrice: data.visitPrice ? parseFloat(data.visitPrice) : undefined,
+      gender: data.gender !== '' && data.gender !== undefined ? parseInt(data.gender) : undefined,
+      profileImageUrl: data.profileImageUrl || undefined,
+      coverImageUrl: data.coverImageUrl || undefined,
+      workingDays: formToWorkingDays(data.workingDays),
+      phoneNumbers:
+        data.phoneNumbers.filter((p) => p.number.trim()).map((p) => ({
+          number: p.number.trim(),
+          type: p.type?.trim() || null,
+        })) || undefined,
+    }
+
+    if (isEdit) {
+      updateMutation.mutate(
+        { id: id!, dto },
+        {
+          onSuccess: () => {
+            toast.success('تم الحفظ بنجاح')
+            navigate(`/doctors/${id}`)
+          },
+          onError: () => toast.danger('حدث خطأ، تحقق من البيانات'),
+        },
+      )
+    } else {
+      createMutation.mutate(dto, {
+        onSuccess: (result) => {
+          toast.success('تمت الإضافة بنجاح')
+          navigate(`/doctors/${result.id}`)
+        },
+        onError: () => toast.danger('حدث خطأ، تحقق من البيانات'),
+      })
+    }
+  }
+
+  const nameValue = watch('name')
+
+  return (
+    <div dir="rtl" className="max-w-3xl mx-auto">
+      {/* ── Breadcrumbs ── */}
+      <Breadcrumbs className="mb-4" onAction={(key) => navigate(String(key))}>
+        <Breadcrumbs.Item id="/doctors">الأطباء</Breadcrumbs.Item>
+        {isEdit && existing ? (
+          <Breadcrumbs.Item id={`/doctors/${id}`}>{existing.name}</Breadcrumbs.Item>
+        ) : null}
+        <Breadcrumbs.Item>{isEdit ? 'تعديل' : 'إضافة طبيب'}</Breadcrumbs.Item>
+      </Breadcrumbs>
+
+      {/* ── Page title ── */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-foreground">
+          {isEdit
+            ? loadingExisting
+              ? '...'
+              : `تعديل: ${existing?.name}`
+            : 'إضافة طبيب جديد'}
+        </h1>
+      </div>
+
+      <Separator className="mb-6" />
+
+      {/* ── Form ── */}
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <DoctorFormFields />
+
+          {/* ── Branches shortcut (edit only) ── */}
+          {isEdit && (
+            <div className="mt-6">
+              <Button
+                variant="ghost"
+                onPress={() => navigate(`/doctors/${id}/branches`)}
+                className="w-full justify-start gap-2"
+                type="button"
+              >
+                <Building2 className="h-4 w-4" />
+                إدارة الفروع
+              </Button>
+            </div>
+          )}
+
+          {/* ── Actions ── */}
+          <div className="flex items-center gap-3 mt-6 mb-2">
+            <Button
+              type="submit"
+              variant="primary"
+              isPending={isPending}
+              isDisabled={!nameValue?.trim()}
+            >
+              <Save className="h-4 w-4" />
+              {isEdit ? 'حفظ التعديلات' : 'إضافة الطبيب'}
+            </Button>
+            <Button
+              variant="ghost"
+              type="button"
+              onPress={() => navigate(isEdit ? `/doctors/${id}` : '/doctors')}
+              isDisabled={isPending}
+            >
+              إلغاء
+            </Button>
+          </div>
+        </form>
+      </FormProvider>
+    </div>
+  )
+}

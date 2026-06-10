@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { BranchListItem, BranchDetails, CreateBranchDto } from '@/types'
+import type { BranchListItem, BranchDetails, CreateBranchDto } from './types'
 
 export async function getBranches(doctorId: string): Promise<BranchListItem[]> {
   const { data } = await api.get(`/doctors/${doctorId}/branches`)
@@ -11,12 +11,19 @@ export async function getBranchDetails(doctorId: string, id: string): Promise<Br
   return data
 }
 
-export async function createBranch(doctorId: string, dto: CreateBranchDto): Promise<{ id: string; name: string }> {
+export async function createBranch(
+  doctorId: string,
+  dto: CreateBranchDto,
+): Promise<{ id: string; name: string }> {
   const { data } = await api.post(`/doctors/${doctorId}/branches`, dto)
   return data
 }
 
-export async function updateBranch(doctorId: string, id: string, dto: Partial<CreateBranchDto>): Promise<{ id: string; name: string }> {
+export async function updateBranch(
+  doctorId: string,
+  id: string,
+  dto: Partial<CreateBranchDto>,
+): Promise<{ id: string; name: string }> {
   const { data } = await api.put(`/doctors/${doctorId}/branches/${id}`, dto)
   return data
 }

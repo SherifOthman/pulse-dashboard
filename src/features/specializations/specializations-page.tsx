@@ -5,7 +5,7 @@ import { useSpecializations, useCreateSpecialization, useUpdateSpecialization, u
 import { SpecializationFormModal } from './specialization-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { PageHeader } from '@/components/page-header'
-import type { SpecializationDto } from '@/types'
+import type { SpecializationDto } from './types'
 
 export function SpecializationsPage() {
   const [search, setSearch] = useState('')

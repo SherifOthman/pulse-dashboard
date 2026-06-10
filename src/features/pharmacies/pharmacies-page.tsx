@@ -9,8 +9,8 @@ import { ConfirmModal } from '@/components/confirm-modal'
 import { AppSelect } from '@/components/app-select'
 import { PageHeader } from '@/components/page-header'
 import { Paginator } from '@/components/paginator'
-import { BusinessType } from '@/types'
-import type { PharmacyDto } from '@/types'
+import { BusinessType } from '@/types/shared'
+import type { PharmacyDto } from './types'
 
 export function PharmaciesPage() {
   const [page, setPage] = useState(1)

@@ -7,7 +7,7 @@ import { LabFormModal } from './lab-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { PageHeader } from '@/components/page-header'
 import { Paginator } from '@/components/paginator'
-import type { LabDto } from '@/types'
+import type { LabDto } from './types'
 
 export function LabsPage() {
   const [page, setPage] = useState(1)

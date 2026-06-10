@@ -1,41 +1,34 @@
 /**
- * AppSelect – a convenience wrapper around HeroUI v3's compound Select.
- * HeroUI v3 Select is based on react-aria-components and uses
- * ListBox + ListBoxItem for options.
+ * AppSelect – a thin wrapper around HeroUI v3 Select.
+ *
+ * Uses dot-notation compound components and forwards common props cleanly.
  */
-import {
-  ListBox,
-  ListBoxItem,
-  Select,
-  SelectIndicator,
-  SelectPopover,
-  SelectTrigger,
-  SelectValue,
-} from "@heroui/react";
+import { Label, ListBox, Select } from '@heroui/react'
 
 export type SelectOption = {
-  id: string;
-  label: string;
-};
+  id: string
+  label: string
+}
 
 type AppSelectProps = {
-  options: SelectOption[];
-  value?: string;
-  onChange?: (key: string) => void;
-  placeholder?: string;
-  isDisabled?: boolean;
-  className?: string;
-  label?: string;
-  variant?: string;
-};
+  options: SelectOption[]
+  value?: string
+  onChange?: (key: string) => void
+  placeholder?: string
+  isDisabled?: boolean
+  className?: string
+  label?: string
+  variant?: 'primary' | 'secondary'
+}
 
 export function AppSelect({
   options,
   value,
   onChange,
-  placeholder = "اختر...",
+  placeholder = 'اختر...',
   isDisabled,
-  className = "",
+  className = '',
+  label,
   variant,
 }: AppSelectProps) {
   return (
@@ -45,21 +38,23 @@ export function AppSelect({
       isDisabled={isDisabled}
       className={className}
       placeholder={placeholder}
-      variant={variant as any}
+      variant={variant}
     >
-      <SelectTrigger className="min-w-40">
-        <SelectValue />
-        <SelectIndicator />
-      </SelectTrigger>
-      <SelectPopover>
+      {label && <Label>{label}</Label>}
+      <Select.Trigger>
+        <Select.Value />
+        <Select.Indicator />
+      </Select.Trigger>
+      <Select.Popover>
         <ListBox>
           {options.map((opt) => (
-            <ListBoxItem key={opt.id} id={opt.id} dir="rtl">
+            <ListBox.Item key={opt.id} id={opt.id} textValue={opt.label} dir="rtl">
               {opt.label}
-            </ListBoxItem>
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
           ))}
         </ListBox>
-      </SelectPopover>
+      </Select.Popover>
     </Select>
-  );
+  )
 }

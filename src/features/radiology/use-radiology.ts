@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getRadiology, createRadiology, updateRadiology, deleteRadiology } from './radiology-api'
 import type { RadiologyQuery } from './radiology-api'
-import type { CreateRadiologyDto } from '@/types'
+import type { CreateRadiologyDto } from './types'
 
 export function useRadiology(query: RadiologyQuery) {
   return useQuery({

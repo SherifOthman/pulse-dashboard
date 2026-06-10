@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getSpecializations, createSpecialization, updateSpecialization, deleteSpecialization } from './specializations-api'
-import type { CreateSpecializationDto } from '@/types'
+import type { CreateSpecializationDto } from './types'
 
 export function useSpecializations() {
   return useQuery({

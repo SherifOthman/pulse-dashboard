@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { CityDto, CreateCityDto } from '@/types'
+import type { CityDto, CreateCityDto } from './types'
 
 export async function getCities(governorateId?: string): Promise<CityDto[]> {
   const params = governorateId ? { governorateId } : {}

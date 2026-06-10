@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getCities, createCity, updateCity, deleteCity } from './cities-api'
-import type { CreateCityDto } from '@/types'
+import type { CreateCityDto } from './types'
 
 export function useCities(governorateId?: string) {
   return useQuery({

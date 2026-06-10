@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '@/auth-store'
 import { fetchMe } from './auth-api'
-import type { UserInfo } from '@/types'
+import type { UserInfo } from './types'
 
 export function useMe() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)

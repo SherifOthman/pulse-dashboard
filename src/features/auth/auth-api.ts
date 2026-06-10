@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { AuthTokens, UserInfo } from '@/types'
+import type { AuthTokens, UserInfo } from './types'
 
 export async function login(email: string, password: string): Promise<AuthTokens> {
   const { data } = await api.post('/auth/login', { email, password })

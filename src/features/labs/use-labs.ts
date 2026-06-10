@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getLabs, createLab, updateLab, deleteLab } from './labs-api'
 import type { LabsQuery } from './labs-api'
-import type { CreateLabDto } from '@/types'
+import type { CreateLabDto } from './types'
 
 export function useLabs(query: LabsQuery) {
   return useQuery({

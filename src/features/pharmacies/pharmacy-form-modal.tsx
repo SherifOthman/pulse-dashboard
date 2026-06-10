@@ -5,7 +5,8 @@ import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
 import { ImageUploadField } from '@/components/image-upload-field'
-import type { GovernorateDto, CityDto, PharmacyDto, CreatePharmacyDto } from '@/types'
+import type { GovernorateDto, CityDto } from '@/features/cities/types'
+import type { PharmacyDto, CreatePharmacyDto } from './types'
 
 type Props = {
   isOpen: boolean

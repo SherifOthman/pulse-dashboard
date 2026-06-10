@@ -7,7 +7,7 @@ import { RadiologyFormModal } from './radiology-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { PageHeader } from '@/components/page-header'
 import { Paginator } from '@/components/paginator'
-import type { RadiologyDto } from '@/types'
+import type { RadiologyDto } from './types'
 
 export function RadiologyPage() {
   const [page, setPage] = useState(1)

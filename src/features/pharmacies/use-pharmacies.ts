@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getPharmacies, createPharmacy, updatePharmacy, deletePharmacy } from './pharmacies-api'
 import type { PharmaciesQuery } from './pharmacies-api'
-import type { CreatePharmacyDto } from '@/types'
+import type { CreatePharmacyDto } from './types'
 
 export function usePharmacies(query: PharmaciesQuery) {
   return useQuery({

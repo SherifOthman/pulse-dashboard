@@ -1,5 +1,6 @@
 import api from '@/services/api'
-import type { PaginatedResponse, RadiologyDto, CreateRadiologyDto } from '@/types'
+import type { PaginatedResponse } from '@/types/shared'
+import type { RadiologyDto, CreateRadiologyDto } from './types'
 
 export type RadiologyQuery = {
   page?: number

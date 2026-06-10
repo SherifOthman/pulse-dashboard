@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
-import type { GovernorateDto } from '@/types'
+import type { GovernorateDto } from '@/features/cities/types'
 
 export function useGovernorates(businessType?: number) {
   return useQuery<GovernorateDto[]>({

@@ -1,5 +1,5 @@
 import api from '@/services/api'
-import type { DashboardUser, CreateDashboardUserDto, UpdateDashboardUserDto } from '@/types'
+import type { DashboardUser, CreateDashboardUserDto, UpdateDashboardUserDto } from './types'
 
 export async function getUsers(): Promise<DashboardUser[]> {
   const { data } = await api.get('/admin/users')

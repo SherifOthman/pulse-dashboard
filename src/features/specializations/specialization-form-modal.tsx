@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Input } from '@heroui/react'
 import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
-import type { SpecializationDto, CreateSpecializationDto } from '@/types'
+import type { SpecializationDto, CreateSpecializationDto } from './types'
 
 type Props = {
   isOpen: boolean

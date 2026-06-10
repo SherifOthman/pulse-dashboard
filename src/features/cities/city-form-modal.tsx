@@ -4,7 +4,7 @@ import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, Mod
 import { Select, SelectTrigger, SelectValue, SelectIndicator, SelectPopover, ListBox, ListBoxItem } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
-import type { GovernorateDto, CityDto, CreateCityDto } from '@/types'
+import type { GovernorateDto, CityDto, CreateCityDto } from './types'
 
 type Props = {
   isOpen: boolean

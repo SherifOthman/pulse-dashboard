@@ -7,7 +7,7 @@ import { useCities, useCreateCity, useUpdateCity, useDeleteCity } from './use-ci
 import { CityFormModal } from './city-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { PageHeader } from '@/components/page-header'
-import type { CityDto } from '@/types'
+import type { CityDto } from './types'
 
 export function CitiesPage() {
   const [filterGovId, setFilterGovId] = useState('')

@@ -5,7 +5,7 @@ import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from './use-use
 import { UserFormModal } from './user-form-modal'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { PageHeader } from '@/components/page-header'
-import type { DashboardUser, CreateDashboardUserDto } from '@/types'
+import type { DashboardUser, CreateDashboardUserDto } from './types'
 
 export function UsersPage() {
   const [addOpen, setAddOpen] = useState(false)

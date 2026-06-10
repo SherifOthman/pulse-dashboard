@@ -1,5 +1,6 @@
 import api from '@/services/api'
-import type { PaginatedResponse, LabDto, CreateLabDto } from '@/types'
+import type { PaginatedResponse } from '@/types/shared'
+import type { LabDto, CreateLabDto } from './types'
 
 export type LabsQuery = {
   page?: number

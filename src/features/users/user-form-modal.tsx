@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button, Input } from '@heroui/react'
 import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
 import { AppSelect } from '@/components/app-select'
-import type { DashboardUser, CreateDashboardUserDto } from '@/types'
+import type { DashboardUser, CreateDashboardUserDto } from './types'
 
 type Props = {
   isOpen: boolean

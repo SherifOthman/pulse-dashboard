@@ -4,6 +4,8 @@ import { DashboardLayout } from '@/dashboard-layout'
 import { LoginPage } from '@/features/auth/login-page'
 import { OverviewPage } from '@/features/dashboard/overview-page'
 import { DoctorsPage } from '@/features/doctors/doctors-page'
+import { DoctorDetailsPage } from '@/features/doctors/doctor-details-page'
+import { DoctorFormPage } from '@/features/doctors/doctor-form-page'
 import { BranchesPage } from '@/features/doctors/branches-page'
 import { PharmaciesPage } from '@/features/pharmacies/pharmacies-page'
 import { LabsPage } from '@/features/labs/labs-page'
@@ -36,6 +38,9 @@ export default function App() {
           >
             <Route index element={<OverviewPage />} />
             <Route path="doctors" element={<DoctorsPage />} />
+            <Route path="doctors/new" element={<DoctorFormPage />} />
+            <Route path="doctors/:id" element={<DoctorDetailsPage />} />
+            <Route path="doctors/:id/edit" element={<DoctorFormPage />} />
             <Route path="doctors/:id/branches" element={<BranchesPage />} />
             <Route path="pharmacies" element={<PharmaciesPage />} />
             <Route path="labs" element={<LabsPage />} />

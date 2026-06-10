@@ -1,5 +1,6 @@
 import api from '@/services/api'
-import type { PaginatedResponse, PharmacyDto, CreatePharmacyDto } from '@/types'
+import type { PaginatedResponse } from '@/types/shared'
+import type { PharmacyDto, CreatePharmacyDto } from './types'
 
 export type PharmaciesQuery = {
   page?: number
