@@ -178,34 +178,31 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
       {/* ── Search bar ── */}
       <div className="relative flex gap-2">
         <div className="relative flex-1">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+            {searching
+              ? <Spinner size="sm" />
+              : <Search className="h-4 w-4 text-muted" />
+            }
+          </div>
           <Input
             value={searchQuery}
             onChange={(e) => handleSearchInput(e.target.value)}
             variant="secondary"
             placeholder="ابحث عن موقع... مثال: مستشفى القاهرة"
             dir="rtl"
-            className="w-full"
+            className="w-full [&_input]:pr-10"
             aria-label="بحث عن موقع"
-            startContent={
-              searching
-                ? <Spinner size="sm" />
-                : <Search className="h-4 w-4 text-muted" />
-            }
-            endContent={
-              searchQuery
-                ? (
-                  <button
-                    type="button"
-                    onClick={() => { setSearchQuery(''); setSearchResults([]) }}
-                    className="text-muted hover:text-foreground transition-colors"
-                    aria-label="مسح البحث"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )
-                : undefined
-            }
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => { setSearchQuery(''); setSearchResults([]) }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 text-muted hover:text-foreground transition-colors"
+              aria-label="مسح البحث"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
 
           {/* Search results dropdown */}
           {searchResults.length > 0 && (
@@ -235,10 +232,41 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
           onPress={handleLocateMe}
           isPending={locating}
           aria-label="موقعي الحالي"
-          title="استخدام موقعي الحالي"
         >
           <LocateFixed className="h-4 w-4" />
         </Button>
+      </div>
+
+      {/* ── Lat / Lng inputs ── */}
+      <div className="flex gap-2">
+        <Input
+          value={value ? String(value.lat) : ''}
+          onChange={(e) => {
+            const v = parseFloat(e.target.value)
+            if (!isNaN(v)) onChange({ lat: v, lng: value?.lng ?? 0 })
+          }}
+          variant="secondary"
+          placeholder="خط العرض (Latitude)"
+          type="number"
+          step="any"
+          className="flex-1"
+          dir="ltr"
+          aria-label="خط العرض"
+        />
+        <Input
+          value={value ? String(value.lng) : ''}
+          onChange={(e) => {
+            const v = parseFloat(e.target.value)
+            if (!isNaN(v)) onChange({ lat: value?.lat ?? 0, lng: v })
+          }}
+          variant="secondary"
+          placeholder="خط الطول (Longitude)"
+          type="number"
+          step="any"
+          className="flex-1"
+          dir="ltr"
+          aria-label="خط الطول"
+        />
       </div>
 
       {/* ── Map ── */}
