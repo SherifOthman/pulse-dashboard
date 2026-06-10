@@ -386,6 +386,19 @@ export function DoctorDetailsPage() {
                 <p className="text-sm text-muted leading-relaxed">{details.description}</p>
               </SectionCard>
             )}
+
+            {/* ── Location map — only when coordinates are set ── */}
+            {details.latitude != null && details.longitude != null && (
+              <div className="lg:col-span-2">
+                <SectionCard icon={<MapPin className="h-4 w-4" />} label="الموقع على الخريطة">
+                  <MapView
+                    lat={details.latitude}
+                    lng={details.longitude}
+                    height={260}
+                  />
+                </SectionCard>
+              </div>
+            )}
           </div>
         </Tabs.Panel>
 

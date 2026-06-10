@@ -4,6 +4,7 @@
  * Reusable working-days editor used in both the doctor form and branch form.
  * Renders 7 rows (Sun–Sat) with a HeroUI Checkbox and two TimeField pickers.
  */
+import { useRef } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { Checkbox, TimeField } from '@heroui/react'
 import { Time } from '@internationalized/date'
@@ -34,6 +35,7 @@ type Props = {
 export function WorkingDaysField({ name = 'workingDays' }: Props) {
   const { control, watch, setValue } = useFormContext()
   const wds: WorkingDayEntry[] = watch(name)
+  const lastTime = useRef({ startTime: '09:00', endTime: '17:00' })
 
   return (
     <div className="flex flex-col gap-2">
@@ -54,7 +56,13 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                 render={({ field }) => (
                   <Checkbox
                     isSelected={field.value}
-                    onChange={field.onChange}
+                    onChange={(v) => {
+                      field.onChange(v)
+                      if (v) {
+                        setValue(`${name}.${i}.startTime`, lastTime.current.startTime)
+                        setValue(`${name}.${i}.endTime`, lastTime.current.endTime)
+                      }
+                    }}
                   >
                     <Checkbox.Control>
                       <Checkbox.Indicator />
@@ -69,9 +77,13 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                 <div className="flex items-center gap-2 flex-1 min-w-0" dir="ltr">
                   <TimeField
                     value={toTime(wd.startTime)}
-                    onChange={(t: Time | null) =>
-                      t && setValue(`${name}.${i}.startTime`, fromTime(t), { shouldDirty: true })
-                    }
+                    onChange={(t: Time | null) => {
+                      if (t) {
+                        const s = fromTime(t)
+                        setValue(`${name}.${i}.startTime`, s, { shouldDirty: true })
+                        lastTime.current.startTime = s
+                      }
+                    }}
                     className="flex-1"
                     aria-label={`${DAY_NAMES[i]} وقت البداية`}
                   >
@@ -86,9 +98,13 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
 
                   <TimeField
                     value={toTime(wd.endTime)}
-                    onChange={(t: Time | null) =>
-                      t && setValue(`${name}.${i}.endTime`, fromTime(t), { shouldDirty: true })
-                    }
+                    onChange={(t: Time | null) => {
+                      if (t) {
+                        const s = fromTime(t)
+                        setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
+                        lastTime.current.endTime = s
+                      }
+                    }}
                     className="flex-1"
                     aria-label={`${DAY_NAMES[i]} وقت النهاية`}
                   >
