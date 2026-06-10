@@ -167,6 +167,13 @@ export type DoctorDetailsDto = {
   visitPrice: number | null
 }
 
+export type CreateBranchDto = {
+  name: string
+  address?: string
+  workingDays?: WorkingDayDto[]
+  phoneNumbers?: PhoneNumberDto[]
+}
+
 export type CreateDoctorDto = {
   name: string
   specializationId?: string
@@ -178,6 +185,7 @@ export type CreateDoctorDto = {
   profileImageUrl?: string
   coverImageUrl?: string
   workingDays?: WorkingDayDto[]
+  branches?: CreateBranchDto[]
 }
 
 export type PharmacyDto = {

@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Skeleton, toast } from '@heroui/react'
+import { toast } from '@heroui/react'
 import { Upload, X } from 'lucide-react'
 import api from '@/services/api'
 
