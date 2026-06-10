@@ -219,7 +219,6 @@ export type CreateDoctorDto = {
   profileImageUrl?: string
   coverImageUrl?: string
   workingDays?: WorkingDayDto[]
-  branches?: CreateBranchDto[]
 }
 
 export type PharmacyDto = {
