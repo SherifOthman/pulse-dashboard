@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Camera, Upload, UserRound, X } from 'lucide-react'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
+import { MapPicker, type MapPickerValue } from '@/components/map-picker'
 import { WorkingDaysField } from './working-days-field'
 import { PhoneNumbersField } from './phone-numbers-field'
 import type { DoctorFormValues } from './doctor-form-schema'
@@ -353,6 +354,38 @@ export function DoctorFormFields() {
 
       {/* ── Phone numbers ── */}
       <PhoneNumbersField />
+
+      {/* ── Location on map ── */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium text-foreground">الموقع على الخريطة</label>
+        <p className="text-xs text-muted -mt-1">ابحث عن العيادة أو انقر على الخريطة لتحديد الموقع بدقة</p>
+        <Controller
+          name="latitude"
+          control={control}
+          render={({ field: latField }) => (
+            <Controller
+              name="longitude"
+              control={control}
+              render={({ field: lngField }) => {
+                const value: MapPickerValue =
+                  latField.value != null && lngField.value != null
+                    ? { lat: latField.value, lng: lngField.value }
+                    : null
+                return (
+                  <MapPicker
+                    value={value}
+                    onChange={(v) => {
+                      latField.onChange(v?.lat ?? null)
+                      lngField.onChange(v?.lng ?? null)
+                    }}
+                    height={300}
+                  />
+                )
+              }}
+            />
+          )}
+        />
+      </div>
 
       {/* ── Working days ── */}
       <WorkingDaysField />

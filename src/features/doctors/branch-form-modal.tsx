@@ -6,6 +6,7 @@ import { Button, Input, Modal } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
+import { MapPicker, type MapPickerValue } from '@/components/map-picker'
 import { WorkingDaysField, defaultWorkingDays, mapWorkingDaysToForm, formToWorkingDays } from './components/working-days-field'
 import { PhoneNumbersField } from './components/phone-numbers-field'
 import type { GovernorateDto, CityDto } from '@/features/cities/types'
@@ -19,6 +20,8 @@ const branchFormSchema = z.object({
   cityId: z.string().optional(),
   address: z.string().optional(),
   visitPrice: z.string().optional(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
   workingDays: z.array(
     z.object({
       day: z.number(),
@@ -43,6 +46,8 @@ const defaultValues: BranchFormValues = {
   cityId: '',
   address: '',
   visitPrice: '',
+  latitude: null,
+  longitude: null,
   workingDays: defaultWorkingDays,
   phoneNumbers: [],
 }
@@ -113,6 +118,8 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
           cityId: initial.cityId || '',
           address: initial.address || '',
           visitPrice: initial.visitPrice?.toString() || '',
+          latitude: initial.latitude ?? null,
+          longitude: initial.longitude ?? null,
           workingDays: mapWorkingDaysToForm(initial.workingDays),
           phoneNumbers: initial.phoneNumbers.map((p) => ({
             number: p.number,
@@ -131,6 +138,8 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
       cityId: data.cityId || undefined,
       address: data.address?.trim() || undefined,
       visitPrice: data.visitPrice ? parseFloat(data.visitPrice) : undefined,
+      latitude: data.latitude ?? undefined,
+      longitude: data.longitude ?? undefined,
       workingDays: formToWorkingDays(data.workingDays),
       phoneNumbers:
         data.phoneNumbers
@@ -223,6 +232,38 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
 
               {/* ── Phone numbers ── */}
               <PhoneNumbersField />
+
+              {/* ── Location on map ── */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-foreground">الموقع على الخريطة</label>
+                <p className="text-xs text-muted -mt-1">انقر على الخريطة أو ابحث لتحديد موقع الفرع</p>
+                <Controller
+                  name="latitude"
+                  control={control}
+                  render={({ field: latField }) => (
+                    <Controller
+                      name="longitude"
+                      control={control}
+                      render={({ field: lngField }) => {
+                        const value: MapPickerValue =
+                          latField.value != null && lngField.value != null
+                            ? { lat: latField.value, lng: lngField.value }
+                            : null
+                        return (
+                          <MapPicker
+                            value={value}
+                            onChange={(v) => {
+                              latField.onChange(v?.lat ?? null)
+                              lngField.onChange(v?.lng ?? null)
+                            }}
+                            height={260}
+                          />
+                        )
+                      }}
+                    />
+                  )}
+                />
+              </div>
 
               {/* ── Working days ── */}
               <WorkingDaysField />

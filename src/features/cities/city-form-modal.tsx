@@ -49,15 +49,15 @@ export function CityFormModal({ isOpen, onClose, onSubmit, isLoading, initial }:
           <ModalBody className="flex flex-col gap-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">اسم المدينة *</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="أدخل اسم المدينة" autoFocus className="w-full" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="أدخل اسم المدينة" variant="secondary" autoFocus className="w-full" />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">المحافظة *</label>
               <Select
                 placeholder="اختر المحافظة"
+                variant="secondary"
                 value={governorateId || null}
                 onChange={(key) => setGovernorateId(key as string)}
-               
               >
                 <SelectTrigger>
                   <SelectValue />

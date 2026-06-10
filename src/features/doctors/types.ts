@@ -99,6 +99,8 @@ export type CreateDoctorDto = {
   gender?: number
   profileImageUrl?: string
   coverImageUrl?: string
+  latitude?: number | null
+  longitude?: number | null
   workingDays?: WorkingDayDto[]
   phoneNumbers?: PhoneNumberDto[]
 }

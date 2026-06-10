@@ -35,8 +35,9 @@ export function CitiesPage() {
       <div className="mb-6 flex items-center gap-3">
         <Select
           placeholder="فلترة بالمحافظة"
+          variant="secondary"
           className="max-w-xs"
-         
+
           value={filterGovId || ''}
           onChange={(key) => setFilterGovId(key as string || '')}
         >

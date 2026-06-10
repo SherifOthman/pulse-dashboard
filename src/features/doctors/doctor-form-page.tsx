@@ -48,6 +48,8 @@ export function DoctorFormPage() {
         gender: existing.gender?.toString() || '',
         profileImageUrl: existing.profileImageUrl || '',
         coverImageUrl: existing.coverImageUrl || '',
+        latitude: existing.latitude ?? null,
+        longitude: existing.longitude ?? null,
         workingDays: mapWorkingDaysToForm(existing.workingDays),
         phoneNumbers: existing.phoneNumbers.map((p) => ({
           number: p.number,
@@ -68,6 +70,8 @@ export function DoctorFormPage() {
       gender: data.gender !== '' && data.gender !== undefined ? parseInt(data.gender) : undefined,
       profileImageUrl: data.profileImageUrl || undefined,
       coverImageUrl: data.coverImageUrl || undefined,
+      latitude: data.latitude ?? undefined,
+      longitude: data.longitude ?? undefined,
       workingDays: formToWorkingDays(data.workingDays),
       phoneNumbers:
         data.phoneNumbers.filter((p) => p.number.trim()).map((p) => ({
