@@ -180,11 +180,9 @@ export type BranchListItem = {
 export type BranchDetails = {
   id: string
   name: string
-  description: string | null
   address: string | null
-  profileImageUrl: string | null
-  coverImageUrl: string | null
   governorate: string
+  governorateId: string
   city: string
   cityId: string
   visitPrice: number | null
@@ -198,9 +196,6 @@ export type CreateBranchDto = {
   name: string
   cityId?: string
   address?: string
-  description?: string
-  profileImageUrl?: string
-  coverImageUrl?: string
   visitPrice?: number
   latitude?: number
   longitude?: number

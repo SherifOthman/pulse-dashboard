@@ -6,8 +6,8 @@ import { Plus, Edit, Trash2, ArrowRight } from 'lucide-react'
 import { PageHeader } from '@/components/page-header'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { BranchFormModal } from './branch-form-modal'
-import { getBranches, createBranch, updateBranch, deleteBranch } from './branches-api'
-import type { CreateBranchDto, BranchListItem } from '@/types'
+import { getBranches, getBranchDetails, createBranch, updateBranch, deleteBranch } from './branches-api'
+import type { CreateBranchDto, BranchListItem, BranchDetails } from '@/types'
 
 export function BranchesPage() {
   const { id: doctorId } = useParams<{ id: string }>()
@@ -15,7 +15,7 @@ export function BranchesPage() {
   const qc = useQueryClient()
 
   const [formOpen, setFormOpen] = useState(false)
-  const [editInitial, setEditInitial] = useState<(CreateBranchDto & { id: string }) | null>(null)
+  const [editInitial, setEditInitial] = useState<BranchDetails | null>(null)
   const [deleting, setDeleting] = useState<BranchListItem | null>(null)
 
   const { data: branches = [], isLoading } = useQuery({
@@ -39,12 +39,13 @@ export function BranchesPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['branches', doctorId] }); setDeleting(null); toast.success('تم الحذف بنجاح') },
   })
 
-  const handleEdit = (b: BranchListItem) => {
-    setEditInitial({
-      id: b.id,
-      name: b.name,
-      visitPrice: b.visitPrice ?? undefined,
-    })
+  const handleEdit = async (b: BranchListItem) => {
+    try {
+      const details = await getBranchDetails(doctorId!, b.id)
+      setEditInitial(details)
+    } catch {
+      toast.danger('فشل تحميل بيانات الفرع')
+    }
   }
 
   return (
@@ -73,7 +74,6 @@ export function BranchesPage() {
               <Table.Column className="hidden md:table-cell text-right">المحافظة</Table.Column>
               <Table.Column className="hidden md:table-cell text-right">المدينة</Table.Column>
               <Table.Column className="hidden md:table-cell text-right">سعر الكشف</Table.Column>
-              <Table.Column className="text-right">الحالة</Table.Column>
               <Table.Column className="text-right">الإجراءات</Table.Column>
             </Table.Header>
             <Table.Body
@@ -91,13 +91,6 @@ export function BranchesPage() {
                   <Table.Cell className="hidden md:table-cell">{b.governorate || '—'}</Table.Cell>
                   <Table.Cell className="hidden md:table-cell">{b.city || '—'}</Table.Cell>
                   <Table.Cell className="hidden md:table-cell">{b.visitPrice ? `${b.visitPrice} ج.م` : '—'}</Table.Cell>
-                  <Table.Cell>
-                    {b.isOpen ? (
-                      <span className="text-success font-medium">مفتوح</span>
-                    ) : (
-                      <span className="text-muted">مغلق</span>
-                    )}
-                  </Table.Cell>
                   <Table.Cell>
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="sm" isIconOnly onPress={() => handleEdit(b)}>

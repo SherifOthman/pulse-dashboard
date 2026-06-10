@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button, Input, TextArea, TimeField } from '@heroui/react'
+import { Button, Input, TimeField } from '@heroui/react'
 import {
   Modal,
   ModalContainer,
@@ -17,15 +17,14 @@ import { Time } from '@internationalized/date'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
-import { ImageUploadField } from '@/components/image-upload-field'
-import type { GovernorateDto, CityDto, CreateBranchDto } from '@/types'
+import type { GovernorateDto, CityDto, CreateBranchDto, BranchDetails } from '@/types'
 
 type Props = {
   isOpen: boolean
   onClose: () => void
   onSubmit: (dto: CreateBranchDto) => void
   isLoading?: boolean
-  initial?: (CreateBranchDto & { id?: string }) | null
+  initial?: BranchDetails | null
 }
 
 const workingDaySchema = z.object({
@@ -40,10 +39,7 @@ const branchFormSchema = z.object({
   governorateId: z.string().optional(),
   cityId: z.string().optional(),
   address: z.string().optional(),
-  description: z.string().optional(),
   visitPrice: z.string().optional(),
-  profileImageUrl: z.string().optional(),
-  coverImageUrl: z.string().optional(),
   workingDays: z.array(workingDaySchema),
 })
 
@@ -70,6 +66,14 @@ function Field({ label, required, children }: { label: string; required?: boolea
   )
 }
 
+function mapWorkingDays(days: BranchDetails['workingDays']): FormValues['workingDays'] {
+  const map = new Map(days.map((d) => [d.day, d]))
+  return defaultWorkingDays.map((def) => {
+    const existing = map.get(def.day)
+    return existing ? { ...def, enabled: true, startTime: existing.startTime, endTime: existing.endTime } : def
+  })
+}
+
 export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial }: Props) {
   const { control, handleSubmit, watch, setValue, reset } = useForm<FormValues>({
     resolver: zodResolver(branchFormSchema),
@@ -78,10 +82,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
       governorateId: '',
       cityId: '',
       address: '',
-      description: '',
       visitPrice: '',
-      profileImageUrl: '',
-      coverImageUrl: '',
       workingDays: defaultWorkingDays,
     },
   })
@@ -101,17 +102,25 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
 
   useEffect(() => {
     if (isOpen) {
-      reset({
-        name: initial?.name || '',
-        governorateId: '',
-        cityId: '',
-        address: initial?.address || '',
-        description: initial?.description || '',
-        visitPrice: initial?.visitPrice?.toString() || '',
-        profileImageUrl: initial?.profileImageUrl || '',
-        coverImageUrl: initial?.coverImageUrl || '',
-        workingDays: defaultWorkingDays,
-      })
+      if (initial) {
+        reset({
+          name: initial.name,
+          governorateId: initial.governorateId || '',
+          cityId: initial.cityId || '',
+          address: initial.address || '',
+          visitPrice: initial.visitPrice?.toString() || '',
+          workingDays: mapWorkingDays(initial.workingDays),
+        })
+      } else {
+        reset({
+          name: '',
+          governorateId: '',
+          cityId: '',
+          address: '',
+          visitPrice: '',
+          workingDays: defaultWorkingDays,
+        })
+      }
     }
   }, [initial, isOpen, reset])
 
@@ -121,10 +130,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
       name: data.name.trim(),
       cityId: data.cityId || undefined,
       address: data.address?.trim() || undefined,
-      description: data.description?.trim() || undefined,
       visitPrice: data.visitPrice ? parseFloat(data.visitPrice) : undefined,
-      profileImageUrl: data.profileImageUrl || undefined,
-      coverImageUrl: data.coverImageUrl || undefined,
       workingDays: enabledDays.length > 0 ? enabledDays.map((d) => ({ day: d.day, startTime: d.startTime, endTime: d.endTime })) : undefined,
     })
   }
@@ -141,7 +147,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
           <ModalCloseTrigger />
           <ModalHeader>
             <ModalHeading>
-              {initial?.id ? 'تعديل الفرع' : 'إضافة فرع جديد'}
+              {initial ? 'تعديل الفرع' : 'إضافة فرع جديد'}
             </ModalHeading>
           </ModalHeader>
 
@@ -149,34 +155,6 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
             dir="rtl"
             className="flex flex-col gap-5 overflow-y-auto max-h-[65vh] px-1"
           >
-            {/* ── Images row ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Controller
-                name="profileImageUrl"
-                control={control}
-                render={({ field }) => (
-                  <ImageUploadField
-                    currentUrl={field.value || null}
-                    onUrlChange={(url) => field.onChange(url || '')}
-                    label="الصورة الشخصية"
-                    aspectRatio="square"
-                  />
-                )}
-              />
-              <Controller
-                name="coverImageUrl"
-                control={control}
-                render={({ field }) => (
-                  <ImageUploadField
-                    currentUrl={field.value || null}
-                    onUrlChange={(url) => field.onChange(url || '')}
-                    label="صورة الغلاف"
-                    aspectRatio="cover"
-                  />
-                )}
-              />
-            </div>
-
             {/* ── Name ── */}
             <Controller
               name="name"
@@ -184,17 +162,6 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               render={({ field }) => (
                 <Field label="اسم الفرع" required>
                   <Input {...field} variant="secondary" placeholder="فرع المهندسين" />
-                </Field>
-              )}
-            />
-
-            {/* ── Description ── */}
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <Field label="الوصف">
-                  <TextArea {...field} placeholder="وصف الفرع..." rows={3} variant="secondary" />
                 </Field>
               )}
             />
@@ -323,7 +290,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               isPending={isLoading}
               isDisabled={!watch('name')?.trim()}
             >
-              {initial?.id ? 'حفظ التعديلات' : 'إضافة الفرع'}
+              {initial ? 'حفظ التعديلات' : 'إضافة الفرع'}
             </Button>
           </ModalFooter>
         </ModalDialog>
