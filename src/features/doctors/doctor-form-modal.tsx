@@ -181,7 +181,7 @@ export function DoctorFormModal({
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="نبذة عن الطبيب وخبراته..."
                 rows={4}
-                className="input w-full resize-none rounded-xl border border-secondary bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                className="w-full resize-none rounded-xl border border-divider bg-field px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
               />
             </Field>
 
