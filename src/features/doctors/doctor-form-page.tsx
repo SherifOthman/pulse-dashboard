@@ -6,6 +6,7 @@ import { Button, Breadcrumbs, Separator, toast } from '@heroui/react'
 import { Building2, Save } from 'lucide-react'
 import { useDoctorDetails, useCreateDoctor, useUpdateDoctor } from './use-doctors'
 import { DoctorFormFields } from './components/doctor-form-fields'
+import { ServicesField } from './components/services-field'
 import {
   doctorFormSchema,
   doctorFormDefaults,
@@ -133,9 +134,17 @@ export function DoctorFormPage() {
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <DoctorFormFields />
 
+          {/* ── Services (edit mode only — needs existing doctor ID) ── */}
+          {isEdit && id && (
+            <div className="mt-6">
+              <Separator className="mb-6" />
+              <ServicesField doctorId={id} />
+            </div>
+          )}
+
           {/* ── Branches shortcut (edit only) ── */}
           {isEdit && (
-            <div className="mt-6">
+            <div className="mt-4">
               <Button
                 variant="ghost"
                 onPress={() => navigate(`/doctors/${id}/branches`)}

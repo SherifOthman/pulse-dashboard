@@ -1,0 +1,194 @@
+/**
+ * ServicesField
+ *
+ * Standalone component that manages a doctor's service list via direct API calls.
+ * Does NOT use react-hook-form — persists immediately on every add/remove.
+ *
+ * - Current services shown as removable Chips
+ * - Dropdown to pick from existing Doctor-type services
+ * - Inline text input to create a brand-new service
+ */
+import { useState } from 'react'
+import { Button, Chip, Input, Spinner, toast } from '@heroui/react'
+import { Plus, Tag, X } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useAvailableServices, useDoctorServices, useUpdateDoctorServices, serviceKeys } from '../use-services'
+import { updateDoctorServices } from '../services-api'
+import type { DoctorServiceDto } from '../services-api'
+
+type Props = { doctorId: string }
+
+export function ServicesField({ doctorId }: Props) {
+  const [newName, setNewName]       = useState('')
+  const [dropdownOpen, setDropdown] = useState(false)
+  const [isPending, setIsPending]   = useState(false)
+  const qc = useQueryClient()
+
+  const { data: available = [], isLoading: loadingAvailable } = useAvailableServices()
+  const { data: current   = [], isLoading: loadingCurrent   } = useDoctorServices(doctorId)
+
+  const currentIds = new Set(current.map((s) => s.id))
+  const pickable   = available.filter((s) => !currentIds.has(s.id))
+  const isLoading  = loadingCurrent || loadingAvailable
+
+  // ── Central mutate helper — uses current data from cache directly ──────────
+  async function persist(services: DoctorServiceDto[], newServiceName?: string) {
+    setIsPending(true)
+    try {
+      const payload = newServiceName
+        ? [...services.map((s) => ({ id: s.id })), { name: newServiceName }]
+        : services.map((s) => ({ id: s.id }))
+
+      const result = await updateDoctorServices(doctorId, payload)
+
+      // Update cache with the response — avoids stale-state issues
+      qc.setQueryData(serviceKeys.doctor(doctorId), result.services)
+      // Invalidate available list in case a new service was created
+      qc.invalidateQueries({ queryKey: serviceKeys.available })
+    } catch {
+      toast.danger('حدث خطأ، تحقق من الاتصال وحاول مرة أخرى')
+    } finally {
+      setIsPending(false)
+    }
+  }
+
+  function addExisting(service: DoctorServiceDto) {
+    setDropdown(false)
+    persist([...current, service])
+  }
+
+  function removeService(id: string) {
+    persist(current.filter((s) => s.id !== id))
+  }
+
+  function createNew() {
+    const trimmed = newName.trim()
+    if (!trimmed) return
+
+    // If it already exists in available list, just link it
+    const existing = available.find(
+      (s) => s.name.toLowerCase() === trimmed.toLowerCase(),
+    )
+
+    if (existing) {
+      if (currentIds.has(existing.id)) {
+        toast.danger('هذه الخدمة مضافة بالفعل')
+        setNewName('')
+        return
+      }
+      persist([...current, existing]).then(() => setNewName(''))
+    } else {
+      // New service — backend will create it
+      persist(current, trimmed).then(() => setNewName(''))
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Tag className="h-4 w-4 text-muted" />
+        <span className="text-sm font-medium text-foreground">الخدمات</span>
+        {isPending && <Spinner size="sm" />}
+      </div>
+
+      {/* Current services */}
+      {isLoading ? (
+        <div className="flex gap-2 flex-wrap">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="h-7 w-20 rounded-full bg-surface-secondary animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2 min-h-[2rem]">
+          {current.length === 0 && (
+            <p className="text-sm text-muted">لا توجد خدمات مضافة</p>
+          )}
+          {current.map((s) => (
+            <Chip key={s.id} size="sm" variant="soft" color="accent">
+              <Chip.Label>{s.name}</Chip.Label>
+              <button
+                type="button"
+                onClick={() => removeService(s.id)}
+                disabled={isPending}
+                className="mr-1 text-muted hover:text-danger transition-colors disabled:opacity-40"
+                aria-label={`إزالة ${s.name}`}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </Chip>
+          ))}
+        </div>
+      )}
+
+      {/* Pick from existing dropdown */}
+      {pickable.length > 0 && (
+        <div className="relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onPress={() => setDropdown((o) => !o)}
+            isDisabled={isPending}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            إضافة خدمة موجودة
+          </Button>
+
+          {dropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setDropdown(false)} />
+              <div className="absolute top-full mt-1 right-0 z-20 w-64 rounded-xl border border-divider bg-surface shadow-lg overflow-hidden">
+                <div className="max-h-52 overflow-y-auto">
+                  {pickable.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => addExisting(s)}
+                      className="w-full px-3 py-2.5 text-right text-sm text-foreground hover:bg-surface-secondary transition-colors border-b border-divider last:border-0"
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Create new inline */}
+      <div className="flex gap-2 items-center">
+        <Input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); createNew() } }}
+          variant="secondary"
+          placeholder="اكتب اسم خدمة جديدة..."
+          dir="rtl"
+          className="flex-1"
+          aria-label="اسم الخدمة الجديدة"
+          isDisabled={isPending}
+          endContent={
+            newName ? (
+              <button type="button" onClick={() => setNewName('')} className="text-muted hover:text-foreground">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : undefined
+          }
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onPress={createNew}
+          isDisabled={!newName.trim() || isPending}
+        >
+          <Plus className="h-4 w-4" />
+          إضافة
+        </Button>
+      </div>
+    </div>
+  )
+}
