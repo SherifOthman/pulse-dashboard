@@ -266,7 +266,9 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               </div>
 
               {/* ── Working days ── */}
-              <WorkingDaysField />
+              <div className="[&_[data-slot=checkbox-control]]:border [&_[data-slot=checkbox-control]]:border-divider [&_[data-slot=checkbox-control]]:rounded">
+                <WorkingDaysField />
+              </div>
             </FormProvider>
           </Modal.Body>
 
