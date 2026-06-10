@@ -149,7 +149,7 @@ export function DoctorFormModal({
             className="flex flex-col gap-5 overflow-y-auto max-h-[65vh] px-1"
           >
             {/* ── Images row ── */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <ImageUploadField
                 currentUrl={profileImageUrl}
                 onUrlChange={setProfileImageUrl}
@@ -176,16 +176,17 @@ export function DoctorFormModal({
 
             {/* ── Description ── */}
             <Field label="الوصف">
-              <Input
-                variant="secondary"
+              <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="نبذة عن الطبيب وخبراته..."
+                rows={4}
+                className="input w-full resize-none rounded-xl border border-secondary bg-secondary px-3 py-2.5 text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
               />
             </Field>
 
             {/* ── Specialization + Gender ── */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="التخصص">
                 <AppSelect
                   variant="secondary"
@@ -213,7 +214,7 @@ export function DoctorFormModal({
             </div>
 
             {/* ── Governorate + City ── */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="المحافظة">
                 <AppSelect
                   variant="secondary"
@@ -242,7 +243,7 @@ export function DoctorFormModal({
             </div>
 
             {/* ── Visit price + Address ── */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="سعر الكشف (ج.م)">
                 <Input
                   variant="secondary"
@@ -265,7 +266,7 @@ export function DoctorFormModal({
             {/* ── Working days ── */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-foreground">أيام العمل</label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
                   { day: 0, name: 'الأحد' },
                   { day: 1, name: 'الإثنين' },
