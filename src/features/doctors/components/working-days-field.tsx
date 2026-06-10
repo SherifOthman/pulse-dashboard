@@ -64,7 +64,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                       }
                     }}
                   >
-                    <Checkbox.Control className="border border-divider rounded">
+                    <Checkbox.Control className="bg-field-background border border-divider rounded">
                       <Checkbox.Indicator />
                     </Checkbox.Control>
                     <span className="text-sm text-foreground min-w-[4rem]">{DAY_NAMES[i]}</span>
