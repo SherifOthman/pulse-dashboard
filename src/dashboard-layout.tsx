@@ -118,7 +118,7 @@ export function DashboardLayout() {
 
         {/* Page content */}
         <main
-          className="flex-1 overflow-auto p-4 lg:p-8"
+          className="flex-1 overflow-auto overscroll-none p-4 lg:p-8"
           dir="rtl"
         >
           <Outlet />

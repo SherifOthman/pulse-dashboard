@@ -105,7 +105,7 @@ export function DoctorFormPage() {
   const nameValue = watch('name')
 
   return (
-    <div dir="rtl" className="max-w-3xl mx-auto">
+    <div dir="rtl" className="max-w-3xl mx-auto pb-8 doctor-form-scroll-root">
       {/* ── Breadcrumbs ── */}
       <Breadcrumbs className="mb-4" onAction={(key) => navigate(String(key))}>
         <Breadcrumbs.Item id="/doctors">الأطباء</Breadcrumbs.Item>

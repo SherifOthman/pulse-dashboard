@@ -101,7 +101,7 @@ export function DoctorFormFields() {
   })
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 overflow-x-hidden pb-6">
 
       {/* ── Images: cover banner + overlapping profile photo ─────────────── */}
       <div className="relative w-full">

@@ -38,11 +38,11 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-foreground">أيام العمل</label>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 overflow-hidden">
         {wds.map((wd, i) => (
           <div
             key={i}
-            className={`rounded-xl border px-3 py-2.5 transition-colors ${
+            className={`rounded-xl border px-3 py-2.5 transition-colors isolate ${
               wd.enabled ? 'border-divider bg-surface' : 'border-dashed border-divider/60 bg-transparent'
             }`}
           >

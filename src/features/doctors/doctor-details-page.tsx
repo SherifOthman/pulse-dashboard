@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { useDoctorDetails, useDeleteDoctor } from './use-doctors'
 import { ConfirmModal } from '@/components/confirm-modal'
+import { MapView } from '@/components/map-view'
 import type { WorkingDayDto, PhoneNumberDto, BranchDto, TestimonialDto } from './types'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

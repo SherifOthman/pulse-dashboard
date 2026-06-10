@@ -36,8 +36,8 @@ export function SpecializationFormModal({ isOpen, onClose, onSubmit, isLoading, 
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="مثل: أمراض القلب، طب الأطفال..."
-             
+              placeholder="مثل: أمراض القلب، طب الأطفال"
+              variant="secondary"
               autoFocus
               className="w-full"
               onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
