@@ -1,7 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Button, Input } from '@heroui/react'
 import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
 import type { SpecializationDto, CreateSpecializationDto } from './types'
+
+const specializationFormSchema = z.object({
+  name: z.string().min(1, 'اسم التخصص مطلوب').max(100, 'اسم التخصص طويل جداً'),
+})
+
+type SpecializationFormValues = z.infer<typeof specializationFormSchema>
 
 type Props = {
   isOpen: boolean
@@ -12,15 +21,19 @@ type Props = {
 }
 
 export function SpecializationFormModal({ isOpen, onClose, onSubmit, isLoading, initial }: Props) {
-  const [name, setName] = useState('')
+  const { control, handleSubmit, reset, formState: { errors } } = useForm<SpecializationFormValues>({
+    resolver: zodResolver(specializationFormSchema),
+    defaultValues: { name: '' },
+  })
 
   useEffect(() => {
-    setName(initial?.name || '')
-  }, [initial, isOpen])
+    if (isOpen) {
+      reset({ name: initial?.name || '' })
+    }
+  }, [initial, isOpen, reset])
 
-  const handleSubmit = () => {
-    if (!name.trim()) return
-    onSubmit({ name: name.trim() })
+  const onFormSubmit = (data: SpecializationFormValues) => {
+    onSubmit({ name: data.name.trim() })
   }
 
   return (
@@ -33,19 +46,25 @@ export function SpecializationFormModal({ isOpen, onClose, onSubmit, isLoading, 
           </ModalHeader>
           <ModalBody>
             <label className="text-sm font-medium text-foreground mb-1.5 block">اسم التخصص *</label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="مثل: أمراض القلب، طب الأطفال"
-              variant="secondary"
-              autoFocus
-              className="w-full"
-              onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  placeholder="مثل: أمراض القلب، طب الأطفال"
+                  variant="secondary"
+                  autoFocus
+                  className="w-full"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit(onFormSubmit)() }}
+                />
+              )}
             />
+            {errors.name && <p className="text-xs text-danger mt-1">{errors.name.message}</p>}
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onPress={onClose} isDisabled={isLoading}>إلغاء</Button>
-            <Button variant="primary" onPress={handleSubmit} isPending={isLoading}>
+            <Button variant="primary" onPress={() => handleSubmit(onFormSubmit)()} isPending={isLoading}>
               {initial ? 'حفظ التعديلات' : 'إضافة'}
             </Button>
           </ModalFooter>

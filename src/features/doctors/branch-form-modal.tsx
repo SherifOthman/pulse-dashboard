@@ -14,8 +14,10 @@ import type { BranchDetails, CreateBranchDto } from './types'
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
 
+const timeRegex = /^\d{2}:\d{2}$/
+
 const branchFormSchema = z.object({
-  name: z.string().min(1, 'اسم الفرع مطلوب'),
+  name: z.string().min(1, 'اسم الفرع مطلوب').max(250, 'الاسم طويل جداً'),
   governorateId: z.string().optional(),
   cityId: z.string().optional(),
   address: z.string().optional(),
@@ -32,11 +34,33 @@ const branchFormSchema = z.object({
   ),
   phoneNumbers: z.array(
     z.object({
-      number: z.string(),
+      number: z.string().min(1, 'رقم الهاتف مطلوب'),
       type: z.string().optional(),
     }),
   ),
-})
+}).refine(
+  (data) => !data.governorateId || !!data.cityId,
+  { message: 'يجب اختيار المدينة عند اختيار المحافظة', path: ['cityId'] },
+).refine(
+  (data) => {
+    for (const day of data.workingDays) {
+      if (!day.enabled) continue
+      if (!timeRegex.test(day.startTime) || !timeRegex.test(day.endTime)) return false
+      if (day.startTime >= day.endTime) return false
+    }
+    return true
+  },
+  { message: 'أوقات العمل غير صحيحة (يجب أن تكون البداية قبل النهاية)', path: ['workingDays'] },
+).refine(
+  (data) => !data.visitPrice || (!isNaN(Number(data.visitPrice)) && Number(data.visitPrice) > 0),
+  { message: 'سعر الكشف يجب أن يكون رقماً موجباً', path: ['visitPrice'] },
+).refine(
+  (data) => data.latitude == null || (data.latitude >= -90 && data.latitude <= 90),
+  { message: 'خط العرض يجب أن يكون بين -90 و 90', path: ['latitude'] },
+).refine(
+  (data) => data.longitude == null || (data.longitude >= -180 && data.longitude <= 180),
+  { message: 'خط الطول يجب أن يكون بين -180 و 180', path: ['longitude'] },
+)
 
 type BranchFormValues = z.infer<typeof branchFormSchema>
 

@@ -1,10 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
+import { useForm, FormProvider, Controller } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Button, Input } from '@heroui/react'
 import { Modal, ModalContainer, ModalDialog, ModalCloseTrigger, ModalHeader, ModalHeading, ModalBody, ModalFooter } from '@heroui/react'
-import { Select, SelectTrigger, SelectValue, SelectIndicator, SelectPopover, ListBox, ListBoxItem } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
+import { AppSelect } from '@/components/app-select'
 import type { GovernorateDto, CityDto, CreateCityDto } from './types'
+
+const cityFormSchema = z.object({
+  name: z.string().min(1, 'اسم المدينة مطلوب').max(100, 'اسم المدينة طويل جداً'),
+  governorateId: z.string().min(1, 'المحافظة مطلوبة'),
+})
+
+type CityFormValues = z.infer<typeof cityFormSchema>
 
 type Props = {
   isOpen: boolean
@@ -15,8 +25,12 @@ type Props = {
 }
 
 export function CityFormModal({ isOpen, onClose, onSubmit, isLoading, initial }: Props) {
-  const [name, setName] = useState('')
-  const [governorateId, setGovernorateId] = useState('')
+  const methods = useForm<CityFormValues>({
+    resolver: zodResolver(cityFormSchema),
+    defaultValues: { name: '', governorateId: '' },
+  })
+
+  const { control, handleSubmit, reset, formState: { errors } } = methods
 
   const { data: governorates = [] } = useQuery<GovernorateDto[]>({
     queryKey: ['governorates'],
@@ -24,18 +38,17 @@ export function CityFormModal({ isOpen, onClose, onSubmit, isLoading, initial }:
   })
 
   useEffect(() => {
-    if (initial) {
-      setName(initial.name || '')
-      setGovernorateId(initial.governorateId || '')
-    } else {
-      setName('')
-      setGovernorateId('')
+    if (isOpen) {
+      if (initial) {
+        reset({ name: initial.name || '', governorateId: initial.governorateId || '' })
+      } else {
+        reset({ name: '', governorateId: '' })
+      }
     }
-  }, [initial, isOpen])
+  }, [initial, isOpen, reset])
 
-  const handleSubmit = () => {
-    if (!name.trim() || !governorateId) return
-    onSubmit({ name: name.trim(), governorateId })
+  const onFormSubmit = (data: CityFormValues) => {
+    onSubmit({ name: data.name.trim(), governorateId: data.governorateId })
   }
 
   return (
@@ -47,33 +60,40 @@ export function CityFormModal({ isOpen, onClose, onSubmit, isLoading, initial }:
             <ModalHeading>{initial ? 'تعديل المدينة' : 'إضافة مدينة جديدة'}</ModalHeading>
           </ModalHeader>
           <ModalBody className="flex flex-col gap-4">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">اسم المدينة *</label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="أدخل اسم المدينة" variant="secondary" autoFocus className="w-full" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">المحافظة *</label>
-              <Select
-                placeholder="اختر المحافظة"
-                variant="secondary"
-                value={governorateId || null}
-                onChange={(key) => setGovernorateId(key as string)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                  <SelectIndicator />
-                </SelectTrigger>
-                <SelectPopover>
-                  <ListBox>
-                    {governorates.map((g) => <ListBoxItem key={g.id} id={g.id}>{g.name}</ListBoxItem>)}
-                  </ListBox>
-                </SelectPopover>
-              </Select>
-            </div>
+            <FormProvider {...methods}>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">اسم المدينة *</label>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <Input {...field} placeholder="أدخل اسم المدينة" variant="secondary" autoFocus className="w-full" />
+                  )}
+                />
+                {errors.name && <p className="text-xs text-danger mt-1">{errors.name.message}</p>}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">المحافظة *</label>
+                <Controller
+                  name="governorateId"
+                  control={control}
+                  render={({ field }) => (
+                    <AppSelect
+                      variant="secondary"
+                      options={governorates.map((g) => ({ id: g.id, label: g.name }))}
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                      placeholder="اختر المحافظة"
+                    />
+                  )}
+                />
+                {errors.governorateId && <p className="text-xs text-danger mt-1">{errors.governorateId.message}</p>}
+              </div>
+            </FormProvider>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" onPress={onClose} isDisabled={isLoading}>إلغاء</Button>
-            <Button variant="primary" onPress={handleSubmit} isPending={isLoading}>
+            <Button variant="primary" onPress={() => handleSubmit(onFormSubmit)()} isPending={isLoading}>
               {initial ? 'حفظ التعديلات' : 'إضافة'}
             </Button>
           </ModalFooter>
