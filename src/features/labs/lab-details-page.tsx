@@ -10,6 +10,7 @@ export function LabDetailsPage() {
       singularLabel="مختبر"
       backRoute="/labs"
       coverIcon={<FlaskConical className="h-16 w-16 text-muted/20" />}
+      segment="labs"
     />
   )
 }

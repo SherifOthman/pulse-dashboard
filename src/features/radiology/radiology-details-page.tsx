@@ -10,6 +10,7 @@ export function RadiologyDetailsPage() {
       singularLabel="مركز أشعة"
       backRoute="/radiology"
       coverIcon={<Scan className="h-16 w-16 text-muted/20" />}
+      segment="radiology"
     />
   )
 }

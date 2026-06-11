@@ -20,6 +20,7 @@ import {
   Pencil,
   Phone,
   Star,
+  Tag,
   Trash2,
 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
@@ -358,6 +359,16 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
                 <p className="text-sm text-muted">لا توجد أرقام</p>
               )}
             </SectionCard>
+
+            {details.services.length > 0 && (
+              <SectionCard icon={<Tag className="h-4 w-4" />} label="الخدمات">
+                <div className="flex flex-wrap gap-2">
+                  {details.services.map((s, i) => (
+                    <Chip key={i} size="sm" variant="soft" color="default">{s.name}</Chip>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
 
             {details.description && (
               <SectionCard icon={<AlertCircle className="h-4 w-4" />} label="نبذة">

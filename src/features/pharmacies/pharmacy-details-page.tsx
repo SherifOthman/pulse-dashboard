@@ -10,6 +10,7 @@ export function PharmacyDetailsPage() {
       singularLabel="صيدلية"
       backRoute="/pharmacies"
       coverIcon={<Pill className="h-16 w-16 text-muted/20" />}
+      segment="pharmacies"
     />
   )
 }
