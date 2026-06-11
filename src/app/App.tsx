@@ -23,10 +23,14 @@ import { CitiesPage } from '@/features/cities/cities-page'
 import { SpecializationsPage } from '@/features/specializations/specializations-page'
 import { UsersPage } from '@/features/users/users-page'
 import { ProfilePage } from '@/features/profile/profile-page'
-import { useAuthStore } from '@/auth-store'
+import { useAuthStore, useHydrated } from '@/auth-store'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const hydrated = useHydrated()
+
+  if (!hydrated) return null
+
   if (!isAuthenticated) return <Navigate to="/login" replace />
   return <>{children}</>
 }

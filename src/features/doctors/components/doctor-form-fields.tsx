@@ -4,49 +4,51 @@
  * All form fields for creating/editing a doctor.
  * Must be wrapped with <FormProvider {...methods}>.
  */
-import { Controller, useFormContext } from 'react-hook-form'
-import { Input, TextArea, toast } from '@heroui/react'
-import { useQuery } from '@tanstack/react-query'
-import { Camera, Upload, UserRound, X } from 'lucide-react'
-import api from '@/services/api'
-import { AppSelect } from '@/components/app-select'
-import { MapPicker, type MapPickerValue } from '@/components/map-picker'
-import { WorkingDaysField } from './working-days-field'
-import { PhoneNumbersField } from './phone-numbers-field'
-import type { DoctorFormValues } from './doctor-form-schema'
-import type { GovernorateDto, CityDto } from '@/features/cities/types'
-import type { SpecializationDto } from '@/features/specializations/types'
-
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5170/dashboard').replace('/dashboard', '')
+import { AppSelect } from "@/components/app-select";
+import { MapPicker, type MapPickerValue } from "@/components/map-picker";
+import type { CityDto, GovernorateDto } from "@/features/cities/types";
+import type { SpecializationDto } from "@/features/specializations/types";
+import api from "@/services/api";
+import { toAbsoluteUrl } from "@/services/image-url";
+import { Input, TextArea, toast, TextField, Label, FieldError } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
+import { Camera, Upload, UserRound, X } from "lucide-react";
+import { Controller, useFormContext } from "react-hook-form";
+import type { DoctorFormValues } from "./doctor-form-schema";
+import { PhoneNumbersField } from "./phone-numbers-field";
+import { WorkingDaysField } from "./working-days-field";
 
 // ── Helper to upload a file and return its URL ────────────────────────────────
 async function uploadFile(file: File): Promise<string> {
-  const fd = new FormData()
-  fd.append('file', file)
-  const { data } = await api.post('/upload', fd)
-  return data.url.startsWith('http') ? data.url : `${API_ORIGIN}${data.url}`
+  const fd = new FormData();
+  fd.append("file", file);
+  const { data } = await api.post("/upload", fd);
+  // Keep the relative path (e.g. /uploads/profiles/xxx.jpg).
+  // The backend resolves it to a fully-qualified URL at query time using
+  // the real request host, so mobile devices always get a reachable URL.
+  return data.url as string;
 }
 
 // ── Helper to open a file picker and handle upload ────────────────────────────
 function openFilePicker(onUrl: (url: string) => void, onError: () => void) {
-  const el = document.createElement('input')
-  el.type = 'file'
-  el.accept = 'image/*'
+  const el = document.createElement("input");
+  el.type = "file";
+  el.accept = "image/*";
   el.onchange = async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0]
-    if (!file) return
-    const preview = URL.createObjectURL(file)
-    onUrl(preview) // show preview immediately
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const preview = URL.createObjectURL(file);
+    onUrl(preview); // show preview immediately
     try {
-      const url = await uploadFile(file)
-      URL.revokeObjectURL(preview)
-      onUrl(url)
+      const url = await uploadFile(file);
+      URL.revokeObjectURL(preview);
+      onUrl(url);
     } catch {
-      URL.revokeObjectURL(preview)
-      onError()
+      URL.revokeObjectURL(preview);
+      onError();
     }
-  }
-  el.click()
+  };
+  el.click();
 }
 
 // ── Field wrapper ─────────────────────────────────────────────────────────────
@@ -54,23 +56,25 @@ function Field({
   label,
   required,
   error,
+  isInvalid,
   children,
 }: {
-  label: string
-  required?: boolean
-  error?: string
-  children: React.ReactNode
+  label: string;
+  required?: boolean;
+  error?: string;
+  isInvalid?: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-foreground">
+    <TextField isInvalid={isInvalid} validationBehavior="aria" className="flex flex-col gap-1.5">
+      <Label className="text-sm font-medium text-foreground">
         {label}
         {required && <span className="text-danger ms-0.5">*</span>}
-      </label>
+      </Label>
       {children}
-      {error && <p className="text-xs text-danger">{error}</p>}
-    </div>
-  )
+      {error && <FieldError className="text-xs text-danger">{error}</FieldError>}
+    </TextField>
+  );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -80,32 +84,31 @@ export function DoctorFormFields() {
     watch,
     setValue,
     formState: { errors },
-  } = useFormContext<DoctorFormValues>()
+  } = useFormContext<DoctorFormValues>();
 
-  const governorateId = watch('governorateId')
+  const governorateId = watch("governorateId");
 
   const { data: governorates = [] } = useQuery<GovernorateDto[]>({
-    queryKey: ['governorates'],
-    queryFn: async () => (await api.get('/governorates')).data,
-  })
+    queryKey: ["governorates"],
+    queryFn: async () => (await api.get("/governorates")).data,
+  });
 
   const { data: specializations = [] } = useQuery<SpecializationDto[]>({
-    queryKey: ['specializations'],
-    queryFn: async () => (await api.get('/specializations')).data,
-  })
+    queryKey: ["specializations"],
+    queryFn: async () => (await api.get("/specializations")).data,
+  });
 
   const { data: cities = [] } = useQuery<CityDto[]>({
-    queryKey: ['cities-by-gov', governorateId],
-    queryFn: async () => (await api.get('/cities', { params: { governorateId } })).data,
+    queryKey: ["cities-by-gov", governorateId],
+    queryFn: async () =>
+      (await api.get("/cities", { params: { governorateId } })).data,
     enabled: !!governorateId,
-  })
+  });
 
   return (
     <div className="flex flex-col gap-5 overflow-x-hidden pb-6">
-
       {/* ── Images: cover banner + overlapping profile photo ─────────────── */}
       <div className="relative w-full">
-
         {/* Cover — full-width banner */}
         <Controller
           name="coverImageUrl"
@@ -115,7 +118,7 @@ export function DoctorFormFields() {
               {field.value ? (
                 <>
                   <img
-                    src={field.value}
+                    src={toAbsoluteUrl(field.value) ?? field.value}
                     alt="صورة الغلاف"
                     className="h-full w-full object-cover"
                   />
@@ -130,7 +133,10 @@ export function DoctorFormFields() {
                   onClick={() =>
                     openFilePicker(
                       (url) => field.onChange(url),
-                      () => { field.onChange(''); toast.danger('فشل رفع الصورة') },
+                      () => {
+                        field.onChange("");
+                        toast.danger("فشل رفع الصورة");
+                      },
                     )
                   }
                   className="h-full w-full flex flex-col items-center justify-center gap-2 text-muted hover:text-primary transition-colors"
@@ -148,7 +154,10 @@ export function DoctorFormFields() {
                   onClick={() =>
                     openFilePicker(
                       (url) => field.onChange(url),
-                      () => { field.onChange(''); toast.danger('فشل رفع الصورة') },
+                      () => {
+                        field.onChange("");
+                        toast.danger("فشل رفع الصورة");
+                      },
                     )
                   }
                   className="flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors backdrop-blur-sm"
@@ -159,7 +168,7 @@ export function DoctorFormFields() {
                 {field.value && (
                   <button
                     type="button"
-                    onClick={() => field.onChange('')}
+                    onClick={() => field.onChange("")}
                     className="flex h-7 w-7 items-center justify-center rounded-full bg-danger/80 text-white hover:bg-danger transition-colors backdrop-blur-sm"
                     aria-label="إزالة صورة الغلاف"
                   >
@@ -182,7 +191,7 @@ export function DoctorFormFields() {
                 <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-background bg-surface-secondary shadow-lg">
                   {field.value ? (
                     <img
-                      src={field.value}
+                      src={toAbsoluteUrl(field.value) ?? field.value}
                       alt="الصورة الشخصية"
                       className="h-full w-full object-cover"
                     />
@@ -199,7 +208,10 @@ export function DoctorFormFields() {
                   onClick={() =>
                     openFilePicker(
                       (url) => field.onChange(url),
-                      () => { field.onChange(''); toast.danger('فشل رفع الصورة') },
+                      () => {
+                        field.onChange("");
+                        toast.danger("فشل رفع الصورة");
+                      },
                     )
                   }
                   className="absolute bottom-0 left-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white shadow-sm hover:bg-primary/90 transition-colors"
@@ -212,7 +224,7 @@ export function DoctorFormFields() {
                 {field.value && (
                   <button
                     type="button"
-                    onClick={() => field.onChange('')}
+                    onClick={() => field.onChange("")}
                     className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-danger text-white shadow-sm hover:bg-danger/90 transition-colors"
                     aria-label="إزالة الصورة الشخصية"
                   >
@@ -233,8 +245,12 @@ export function DoctorFormFields() {
         name="name"
         control={control}
         render={({ field }) => (
-          <Field label="الاسم" required error={errors.name?.message}>
-            <Input {...field} variant="secondary" placeholder="د. محمد أحمد" />
+          <Field label="الاسم" required error={errors.name?.message} isInvalid={!!errors.name}>
+            <Input
+              {...field}
+              variant="secondary"
+              placeholder="د. محمد أحمد"
+            />
           </Field>
         )}
       />
@@ -244,7 +260,7 @@ export function DoctorFormFields() {
         name="description"
         control={control}
         render={({ field }) => (
-          <Field label="الوصف" error={errors.description?.message}>
+          <Field label="الوصف" error={errors.description?.message} isInvalid={!!errors.description}>
             <TextArea
               {...field}
               placeholder="نبذة عن الطبيب وخبراته..."
@@ -264,8 +280,12 @@ export function DoctorFormFields() {
             <Field label="التخصص" error={errors.specializationId?.message}>
               <AppSelect
                 variant="secondary"
-                options={specializations.map((s) => ({ id: s.id, label: s.name }))}
-                value={field.value || ''}
+                isInvalid={!!errors.specializationId}
+                options={specializations.map((s) => ({
+                  id: s.id,
+                  label: s.name,
+                }))}
+                value={field.value || ""}
                 onChange={field.onChange}
                 placeholder="اختر التخصص"
               />
@@ -281,10 +301,10 @@ export function DoctorFormFields() {
                 variant="secondary"
                 isInvalid={!!errors.gender}
                 options={[
-                  { id: '0', label: 'ذكر' },
-                  { id: '1', label: 'أنثى' },
+                  { id: "0", label: "ذكر" },
+                  { id: "1", label: "أنثى" },
                 ]}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={field.onChange}
                 placeholder="اختر الجنس"
               />
@@ -304,10 +324,10 @@ export function DoctorFormFields() {
                 variant="secondary"
                 isInvalid={!!errors.governorateId}
                 options={governorates.map((g) => ({ id: g.id, label: g.name }))}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={(val) => {
-                  field.onChange(val)
-                  setValue('cityId', '')
+                  field.onChange(val);
+                  setValue("cityId", "");
                 }}
                 placeholder="اختر المحافظة"
               />
@@ -323,7 +343,7 @@ export function DoctorFormFields() {
                 variant="secondary"
                 isInvalid={!!errors.cityId}
                 options={cities.map((c) => ({ id: c.id, label: c.name }))}
-                value={field.value || ''}
+                value={field.value || ""}
                 onChange={field.onChange}
                 placeholder="اختر المدينة"
                 isDisabled={!governorateId}
@@ -333,24 +353,19 @@ export function DoctorFormFields() {
         />
       </div>
 
-      {/* ── Visit price + Address ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Controller
-          name="visitPrice"
-          control={control}
-          render={({ field }) => (
-            <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message}>
-              <Input {...field} variant="secondary" type="number" min="0" placeholder="0" />
-            </Field>
-          )}
-        />
+      {/* ── Address ── */}
+      <div>
         <Controller
           name="address"
           control={control}
           render={({ field }) => (
-            <Field label="العنوان" error={errors.address?.message}>
-              <Input {...field} variant="secondary" placeholder="عنوان العيادة" />
-            </Field>
+          <Field label="العنوان" error={errors.address?.message} isInvalid={!!errors.address}>
+            <Input
+              {...field}
+              variant="secondary"
+              placeholder="عنوان العيادة"
+            />
+          </Field>
           )}
         />
       </div>
@@ -360,10 +375,18 @@ export function DoctorFormFields() {
 
       {/* ── Location on map ── */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium text-foreground">الموقع على الخريطة</label>
-        <p className="text-xs text-muted -mt-1">ابحث عن العيادة أو انقر على الخريطة لتحديد الموقع بدقة</p>
-        {errors.latitude?.message && <p className="text-xs text-danger">{errors.latitude.message}</p>}
-        {errors.longitude?.message && <p className="text-xs text-danger">{errors.longitude.message}</p>}
+        <label className="text-sm font-medium text-foreground">
+          الموقع على الخريطة
+        </label>
+        <p className="text-xs text-muted -mt-1">
+          ابحث عن العيادة أو انقر على الخريطة لتحديد الموقع بدقة
+        </p>
+        {errors.latitude?.message && (
+          <p className="text-xs text-danger">{errors.latitude.message}</p>
+        )}
+        {errors.longitude?.message && (
+          <p className="text-xs text-danger">{errors.longitude.message}</p>
+        )}
         <Controller
           name="latitude"
           control={control}
@@ -375,17 +398,17 @@ export function DoctorFormFields() {
                 const value: MapPickerValue =
                   latField.value != null && lngField.value != null
                     ? { lat: latField.value, lng: lngField.value }
-                    : null
+                    : null;
                 return (
                   <MapPicker
                     value={value}
                     onChange={(v) => {
-                      latField.onChange(v?.lat ?? null)
-                      lngField.onChange(v?.lng ?? null)
+                      latField.onChange(v?.lat ?? null);
+                      lngField.onChange(v?.lng ?? null);
                     }}
                     height={300}
                   />
-                )
+                );
               }}
             />
           )}
@@ -395,13 +418,16 @@ export function DoctorFormFields() {
       {/* ── Working days ── */}
       <WorkingDaysField />
       {errors.workingDays?.root?.message && (
-        <p className="text-xs text-danger -mt-3">{errors.workingDays.root.message}</p>
+        <p className="text-xs text-danger -mt-3">
+          {errors.workingDays.root.message}
+        </p>
       )}
       {/* Cross-field working days error from .refine() */}
-      {typeof errors.workingDays?.message === 'string' && (
-        <p className="text-xs text-danger -mt-3">{errors.workingDays.message}</p>
+      {typeof errors.workingDays?.message === "string" && (
+        <p className="text-xs text-danger -mt-3">
+          {errors.workingDays.message}
+        </p>
       )}
-
     </div>
-  )
+  );
 }

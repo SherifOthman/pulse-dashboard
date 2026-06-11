@@ -9,7 +9,6 @@ export function RadiologyDetailsPage() {
       useDelete={() => radiologyHooks.useDelete()}
       singularLabel="مركز أشعة"
       backRoute="/radiology"
-      segment="radiology"
       coverIcon={<Scan className="h-16 w-16 text-muted/20" />}
     />
   )

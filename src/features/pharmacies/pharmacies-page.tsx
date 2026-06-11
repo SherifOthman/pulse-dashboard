@@ -17,6 +17,7 @@ import { PageHeader } from '@/components/page-header'
 import { Paginator } from '@/components/paginator'
 import { useDebounce } from '@/hooks/use-debounce'
 import { pharmacyHooks } from './index'
+import { toAbsoluteUrl } from '@/services/image-url'
 import type { BusinessListItem } from '@/types/shared'
 import type { GovernorateDto } from '@/features/cities/types'
 import api from '@/services/api'
@@ -179,7 +180,7 @@ export function PharmaciesPage() {
                         <div className="flex items-center gap-3">
                           <Avatar size="sm">
                             {item.profileImageUrl ? (
-                              <Avatar.Image src={item.profileImageUrl} alt={item.name} />
+                              <Avatar.Image src={toAbsoluteUrl(item.profileImageUrl) ?? item.profileImageUrl} alt={item.name} />
                             ) : null}
                             <Avatar.Fallback>
                               <Pill className="h-4 w-4" />
@@ -216,8 +217,7 @@ export function PharmaciesPage() {
                             variant="ghost"
                             isIconOnly
                             aria-label="تعديل"
-                            onPress={(e) => {
-                              e?.continuePropagation?.()
+                            onPress={() => {
                               navigate(`/pharmacies/${item.id}/edit`)
                             }}
                           >
@@ -257,6 +257,7 @@ export function PharmaciesPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
+        isPending={deleteMutation.isPending}
         title="حذف الصيدلية"
         message={`هل أنت متأكد من حذف "${deleteTarget?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
       />

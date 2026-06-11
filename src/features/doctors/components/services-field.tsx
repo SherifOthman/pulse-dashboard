@@ -54,11 +54,14 @@ export function ServicesField({ doctorId }: Props) {
 
   function addExisting(service: DoctorServiceDto) {
     setDropdown(false)
-    persist([...current, service])
+    persist([...current, service]).then(() => toast.success(`تمت إضافة "${service.name}"`))
   }
 
   function removeService(id: string) {
-    persist(current.filter((s) => s.id !== id))
+    const name = current.find((s) => s.id === id)?.name
+    persist(current.filter((s) => s.id !== id)).then(() => {
+      if (name) toast.info(`تمت إزالة "${name}"`)
+    })
   }
 
   function createNew() {
@@ -76,10 +79,16 @@ export function ServicesField({ doctorId }: Props) {
         setNewName('')
         return
       }
-      persist([...current, existing]).then(() => setNewName(''))
+      persist([...current, existing]).then(() => {
+        toast.success(`تمت إضافة "${existing.name}"`)
+        setNewName('')
+      })
     } else {
       // New service — backend will create it
-      persist(current, trimmed).then(() => setNewName(''))
+      persist(current, trimmed).then(() => {
+        toast.success(`تمت إضافة "${trimmed}"`)
+        setNewName('')
+      })
     }
   }
 

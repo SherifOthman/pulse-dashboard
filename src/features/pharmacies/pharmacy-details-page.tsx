@@ -9,7 +9,6 @@ export function PharmacyDetailsPage() {
       useDelete={() => pharmacyHooks.useDelete()}
       singularLabel="صيدلية"
       backRoute="/pharmacies"
-      segment="pharmacies"
       coverIcon={<Pill className="h-16 w-16 text-muted/20" />}
     />
   )

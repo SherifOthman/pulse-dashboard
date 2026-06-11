@@ -2,8 +2,7 @@ import { useRef, useState } from 'react'
 import { toast } from '@heroui/react'
 import { Upload, X } from 'lucide-react'
 import api from '@/services/api'
-
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5170/dashboard').replace('/dashboard', '')
+import { toAbsoluteUrl } from '@/services/image-url'
 
 type Props = {
   currentUrl: string | null
@@ -41,7 +40,7 @@ export function ImageUploadField({
       const { data } = await api.post('/upload', formData)
       URL.revokeObjectURL(localPreview)
       setPreviewUrl(null)
-      onUrlChange(data.url.startsWith('http') ? data.url : `${API_ORIGIN}${data.url}`)
+      onUrlChange(data.url as string)
     } catch {
       URL.revokeObjectURL(localPreview)
       setPreviewUrl(null)
@@ -53,7 +52,8 @@ export function ImageUploadField({
     }
   }
 
-  const displayUrl = currentUrl || previewUrl
+  // previewUrl is a local blob URL (already absolute), currentUrl may be relative
+  const displayUrl = previewUrl ?? (currentUrl ? toAbsoluteUrl(currentUrl) : null)
 
   return (
     <div className="flex flex-col gap-1.5">

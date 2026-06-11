@@ -5,22 +5,16 @@ import type { createBranchApi } from './branches-api'
 type BranchApi = ReturnType<typeof createBranchApi>
 
 export function createBranchHooks(queryKey: string, branchApi: BranchApi) {
-  const keys = {
-    all: (businessId: string) => [queryKey, branchKeys, businessId] as const,
-    detail: (businessId: string, id: string) => [queryKey, branchKeys, businessId, id] as const,
-  }
-
   function useBranches(businessId: string | undefined) {
     return useQuery({
-      queryKey: keys.all(businessId ?? ''),
+      queryKey: [queryKey, 'list', businessId ?? ''],
       queryFn: () => branchApi.getBranches(businessId!),
       enabled: !!businessId,
     })
   }
 
   function invalidate(qc: ReturnType<typeof useQueryClient>, businessId: string) {
-    qc.invalidateQueries({ queryKey: keys.all(businessId) })
-    qc.invalidateQueries({ queryKey: [queryKey, 'detail', businessId] })
+    qc.invalidateQueries({ queryKey: [queryKey, 'list', businessId] })
   }
 
   function useCreateBranch(businessId: string) {
@@ -47,7 +41,10 @@ export function createBranchHooks(queryKey: string, branchApi: BranchApi) {
     })
   }
 
+  const keys = {
+    all:    (businessId: string) => [queryKey, 'list', businessId] as const,
+    detail: (businessId: string, id: string) => [queryKey, 'detail', businessId, id] as const,
+  }
+
   return { keys, useBranches, useCreateBranch, useUpdateBranch, useDeleteBranch }
 }
-
-const branchKeys = 'branches'

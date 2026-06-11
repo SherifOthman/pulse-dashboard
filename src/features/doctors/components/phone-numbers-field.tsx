@@ -37,40 +37,42 @@ export function PhoneNumbersField({ name = 'phoneNumbers' }: Props) {
       )}
 
       <div className="flex flex-col gap-2">
-        {fields.map((field, i) => (
-          <div key={field.id} className="flex flex-col gap-1">
-            <div className="flex gap-2 items-center">
-              <Input
-                {...register(`${name}.${i}.number`)}
-                variant="secondary"
-                placeholder="رقم الهاتف"
-                dir="ltr"
-                className="flex-1"
-                aria-label="رقم الهاتف"
-              />
-              <Input
-                {...register(`${name}.${i}.type`)}
-                variant="secondary"
-                placeholder="النوع (اختياري)"
-                className="w-28 shrink-0"
-                aria-label="نوع الرقم"
-              />
-              <Button
-                size="sm"
-                variant="ghost"
-                isIconOnly
-                onPress={() => remove(i)}
-                type="button"
-                aria-label="حذف الرقم"
-              >
-                <Trash2 className="h-4 w-4 text-danger" />
-              </Button>
+        {fields.map((field, i) => {
+          const numberError = (errors as any)[name]?.[i]?.number?.message
+          return (
+            <div key={field.id} className="flex flex-col gap-1">
+              <div className="flex gap-2 items-center">
+                <div className="flex flex-col flex-1 gap-0.5">
+                  <Input
+                    {...register(`${name}.${i}.number`)}
+                    variant="secondary"
+                    placeholder="رقم الهاتف"
+                    dir="ltr"
+                    aria-label="رقم الهاتف"
+                  />
+                  {numberError && <p className="text-xs text-danger">{numberError}</p>}
+                </div>
+                <Input
+                  {...register(`${name}.${i}.type`)}
+                  variant="secondary"
+                  placeholder="النوع (اختياري)"
+                  className="w-28 shrink-0"
+                  aria-label="نوع الرقم"
+                />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  isIconOnly
+                  onPress={() => remove(i)}
+                  type="button"
+                  aria-label="حذف الرقم"
+                >
+                  <Trash2 className="h-4 w-4 text-danger" />
+                </Button>
+              </div>
             </div>
-            {(errors as any)[name]?.[i]?.number?.message && (
-              <p className="text-xs text-danger">{(errors as any)[name][i].number.message}</p>
-            )}
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

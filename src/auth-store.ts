@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useState, useEffect } from 'react'
 import type { AuthTokens } from '@/features/auth/types'
 
 type AuthState = {
@@ -31,6 +32,18 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
         }),
     }),
-    { name: 'auth-storage' },
+    {
+      name: 'auth-storage',
+    },
   ),
 )
+
+export function useHydrated() {
+  const [hydrated, setHydrated] = useState(useAuthStore.persist.hasHydrated())
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true)
+    return unsub
+  }, [])
+  return hydrated
+}

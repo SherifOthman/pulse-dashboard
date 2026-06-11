@@ -11,7 +11,7 @@ export function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [_loading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(false)
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword) return
@@ -87,7 +87,7 @@ export function ProfilePage() {
         </div>
 
         <div className="flex justify-end gap-3 pt-2">
-            <Button variant="primary" onPress={handleChangePassword}>
+            <Button variant="primary" onPress={handleChangePassword} isDisabled={isLoading} isPending={isLoading}>
             تغيير كلمة المرور
           </Button>
         </div>

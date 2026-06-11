@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useForm, FormProvider, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button, Input, Modal } from '@heroui/react'
+import { Button, Input, Modal, TextField, Label, FieldError } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/services/api'
 import { AppSelect } from '@/components/app-select'
@@ -18,9 +18,9 @@ const timeRegex = /^\d{2}:\d{2}$/
 
 const branchFormSchema = z.object({
   name: z.string().min(1, 'اسم الفرع مطلوب').max(100, 'الاسم طويل جداً'),
-  governorateId: z.string().optional(),
-  cityId: z.string().optional(),
-  address: z.string().optional(),
+  governorateId: z.string().min(1, 'المحافظة مطلوبة'),
+  cityId: z.string().min(1, 'المدينة مطلوبة'),
+  address: z.string().max(500, 'العنوان طويل جداً').optional(),
   visitPrice: z.string().optional(),
   latitude: z.number().nullable().optional(),
   longitude: z.number().nullable().optional(),
@@ -31,6 +31,9 @@ const branchFormSchema = z.object({
       endTime: z.string(),
       enabled: z.boolean(),
     }),
+  ).refine(
+    (days) => days.some(d => d.enabled),
+    { message: "يجب اختيار يوم عمل واحد على الأقل", path: ["workingDays"] }
   ),
   phoneNumbers: z.array(
     z.object({
@@ -80,22 +83,24 @@ function Field({
   label,
   required,
   error,
+  isInvalid,
   children,
 }: {
   label: string
   required?: boolean
   error?: string
+  isInvalid?: boolean
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-foreground">
+    <TextField isInvalid={isInvalid} validationBehavior="aria" className="flex flex-col gap-1.5">
+      <Label className="text-sm font-medium text-foreground">
         {label}
         {required && <span className="text-danger ms-0.5">*</span>}
-      </label>
+      </Label>
       {children}
-      {error && <p className="text-xs text-danger">{error}</p>}
-    </div>
+      {error && <FieldError className="text-xs text-danger">{error}</FieldError>}
+    </TextField>
   )
 }
 
@@ -188,7 +193,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                 name="name"
                 control={control}
                 render={({ field }) => (
-                  <Field label="اسم الفرع" required error={errors.name?.message}>
+                  <Field label="اسم الفرع" required error={errors.name?.message} isInvalid={!!errors.name}>
                     <Input {...field} variant="secondary" placeholder="فرع المهندسين" />
                   </Field>
                 )}
@@ -240,7 +245,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                   name="visitPrice"
                   control={control}
                   render={({ field }) => (
-                    <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message}>
+                    <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message} isInvalid={!!errors.visitPrice}>
                       <Input {...field} variant="secondary" type="number" min="0" placeholder="0" />
                     </Field>
                   )}
@@ -249,7 +254,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                   name="address"
                   control={control}
                   render={({ field }) => (
-                    <Field label="العنوان" error={errors.address?.message}>
+                    <Field label="العنوان" error={errors.address?.message} isInvalid={!!errors.address}>
                       <Input {...field} variant="secondary" placeholder="عنوان الفرع" />
                     </Field>
                   )}

@@ -43,6 +43,9 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
       {(errors as any)[name]?.message && (
         <p className="text-xs text-danger">{(errors as any)[name].message}</p>
       )}
+      {(errors as any)[name]?.root?.message && (
+        <p className="text-xs text-danger">{(errors as any)[name].root.message}</p>
+      )}
       <div className="flex flex-col gap-1.5 overflow-hidden">
         {wds.map((wd, i) => (
           <div

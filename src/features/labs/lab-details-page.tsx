@@ -9,7 +9,6 @@ export function LabDetailsPage() {
       useDelete={() => labHooks.useDelete()}
       singularLabel="مختبر"
       backRoute="/labs"
-      segment="labs"
       coverIcon={<FlaskConical className="h-16 w-16 text-muted/20" />}
     />
   )

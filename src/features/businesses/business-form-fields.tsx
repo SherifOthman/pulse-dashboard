@@ -1,8 +1,9 @@
 import { Controller, useFormContext } from 'react-hook-form'
-import { Input, TextArea, toast } from '@heroui/react'
+import { Input, TextArea, toast, TextField, Label, FieldError } from '@heroui/react'
 import { useQuery } from '@tanstack/react-query'
 import { Camera, Upload, X } from 'lucide-react'
 import api from '@/services/api'
+import { toAbsoluteUrl } from '@/services/image-url'
 import { AppSelect } from '@/components/app-select'
 import { MapPicker, type MapPickerValue } from '@/components/map-picker'
 import { PhoneNumbersField } from '@/features/doctors/components/phone-numbers-field'
@@ -11,13 +12,14 @@ import { BusinessServicesFormField } from './business-services-form-field'
 import type { BusinessFormValues } from './business-form-schema'
 import type { GovernorateDto, CityDto } from '@/features/cities/types'
 
-const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:5170/dashboard').replace('/dashboard', '')
-
 async function uploadFile(file: File): Promise<string> {
   const fd = new FormData()
   fd.append('file', file)
   const { data } = await api.post('/upload', fd)
-  return data.url.startsWith('http') ? data.url : `${API_ORIGIN}${data.url}`
+  // Keep the relative path (e.g. /uploads/businesses/xxx.jpg).
+  // The backend resolves it to a fully-qualified URL at query time using
+  // the real request host, so mobile devices always get a reachable URL.
+  return data.url as string
 }
 
 function openFilePicker(onUrl: (url: string) => void, onError: () => void) {
@@ -45,22 +47,24 @@ function Field({
   label,
   required,
   error,
+  isInvalid,
   children,
 }: {
   label: string
   required?: boolean
   error?: string
+  isInvalid?: boolean
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-foreground">
+    <TextField isInvalid={isInvalid} validationBehavior="aria" className="flex flex-col gap-1.5">
+      <Label className="text-sm font-medium text-foreground">
         {label}
         {required && <span className="text-danger ms-0.5">*</span>}
-      </label>
+      </Label>
       {children}
-      {error && <p className="text-xs text-danger">{error}</p>}
-    </div>
+      {error && <FieldError className="text-xs text-danger">{error}</FieldError>}
+    </TextField>
   )
 }
 
@@ -100,7 +104,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
               {field.value ? (
                 <>
                   <img
-                    src={field.value}
+                    src={toAbsoluteUrl(field.value) ?? field.value}
                     alt="صورة الغلاف"
                     className="h-full w-full object-cover"
                   />
@@ -165,7 +169,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
                 <div className="h-20 w-20 rounded-full overflow-hidden border-4 border-background bg-surface-secondary shadow-lg">
                   {field.value ? (
                     <img
-                      src={field.value}
+                      src={toAbsoluteUrl(field.value) ?? field.value}
                       alt="الصورة الشخصية"
                       className="h-full w-full object-cover"
                     />
@@ -214,7 +218,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
         name="name"
         control={control}
         render={({ field }) => (
-          <Field label="الاسم" required error={errors.name?.message}>
+          <Field label="الاسم" required error={errors.name?.message} isInvalid={!!errors.name}>
             <Input {...field} variant="secondary" placeholder={`اسم ${singularLabel || 'المنشأة'}`} />
           </Field>
         )}
@@ -225,7 +229,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
         name="description"
         control={control}
         render={({ field }) => (
-          <Field label="الوصف" error={errors.description?.message}>
+          <Field label="الوصف" error={errors.description?.message} isInvalid={!!errors.description}>
             <TextArea
               {...field}
               placeholder={`نبذة عن ${singularLabel || 'المنشأة'}...`}
@@ -281,7 +285,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
         name="address"
         control={control}
         render={({ field }) => (
-          <Field label="العنوان" error={errors.address?.message}>
+          <Field label="العنوان" error={errors.address?.message} isInvalid={!!errors.address}>
             <Input {...field} variant="secondary" placeholder="عنوان تفصيلي" />
           </Field>
         )}

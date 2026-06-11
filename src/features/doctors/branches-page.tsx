@@ -20,6 +20,7 @@ import {
   useDeleteBranch,
 } from './use-branches'
 import { getBranchDetails } from './branches-api'
+import { toAbsoluteUrl } from '@/services/image-url'
 import type { BranchListItem, BranchDetails, CreateBranchDto } from './types'
 
 export function BranchesPage() {
@@ -149,7 +150,7 @@ export function BranchesPage() {
                         <div className="flex items-center gap-3">
                           <Avatar size="sm" className="rounded-lg">
                             {b.profileImageUrl
-                              ? <Avatar.Image src={b.profileImageUrl} alt={b.name} />
+                              ? <Avatar.Image src={toAbsoluteUrl(b.profileImageUrl) ?? b.profileImageUrl} alt={b.name} />
                               : null}
                             <Avatar.Fallback className="rounded-lg">
                               <Building2 className="h-4 w-4" />

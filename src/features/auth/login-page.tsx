@@ -1,8 +1,8 @@
 import { useAuthStore } from "@/auth-store";
-import { Button, Input, Label, TextField } from "@heroui/react";
+import { Button, Input, Label, TextField, toast } from "@heroui/react";
 import { AxiosError } from "axios";
 import { HeartPulse } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { login } from "./auth-api";
@@ -13,7 +13,13 @@ type LoginForm = {
 };
 
 export function LoginPage() {
-  const [error, setError] = useState<string | null>(null);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) navigate("/", { replace: true });
+  }, [isAuthenticated, navigate]);
+
   const {
     control,
     handleSubmit,
@@ -22,10 +28,8 @@ export function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
   const setSession = useAuthStore((s) => s.setSession);
-  const navigate = useNavigate();
 
   const onSubmit = async (data: LoginForm) => {
-    setError(null);
     try {
       const tokens = await login(data.email, data.password);
       setSession(tokens);
@@ -34,9 +38,11 @@ export function LoginPage() {
       const axiosErr = err instanceof AxiosError ? err : null;
       const message =
         axiosErr?.response?.data?.message || axiosErr?.response?.data?.title;
-      setError(message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
+      toast.danger(message || "البريد الإلكتروني أو كلمة المرور غير صحيحة");
     }
   };
+
+  if (isAuthenticated) return null;
 
   return (
     <div
@@ -86,12 +92,6 @@ export function LoginPage() {
                 {...control.register("password", { required: true })}
               />
             </TextField>
-
-            {error && (
-              <div className="bg-danger/10 border-danger/20 rounded-xl border p-3">
-                <p className="text-danger text-center text-sm">{error}</p>
-              </div>
-            )}
 
             <Button
               type="submit"

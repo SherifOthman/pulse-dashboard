@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useDashboardStats, type TopDoctorDto, type RecentDoctorDto, type SpecializationStatDto, type GovernorateStatDto } from './use-dashboard-stats'
 import { useMe } from '@/features/auth/use-me'
+import { toAbsoluteUrl } from '@/services/image-url'
 
 // ── Greeting helper ────────────────────────────────────────────────────────────
 function getGreeting(): string {
@@ -99,7 +100,7 @@ function TopDoctorRow({ doctor, rank, onClick }: { doctor: TopDoctorDto; rank: n
 
       <Avatar size="sm">
         {doctor.profileImageUrl
-          ? <Avatar.Image src={doctor.profileImageUrl} alt={doctor.name} />
+          ? <Avatar.Image src={toAbsoluteUrl(doctor.profileImageUrl) ?? doctor.profileImageUrl} alt={doctor.name} />
           : null}
         <Avatar.Fallback>
           <UserRound className="h-4 w-4" />
@@ -133,7 +134,7 @@ function RecentDoctorCard({ doctor, onClick }: { doctor: RecentDoctorDto; onClic
       <Badge.Anchor>
         <Avatar size="sm">
           {doctor.profileImageUrl
-            ? <Avatar.Image src={doctor.profileImageUrl} alt={doctor.name} />
+            ? <Avatar.Image src={toAbsoluteUrl(doctor.profileImageUrl) ?? doctor.profileImageUrl} alt={doctor.name} />
             : null}
           <Avatar.Fallback>
             <UserRound className="h-4 w-4" />

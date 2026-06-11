@@ -27,13 +27,17 @@ api.interceptors.response.use(
       if (!refreshPromise) {
         refreshPromise = (async () => {
           try {
-            const storedRefreshToken = useAuthStore.getState().refreshToken;
+            // The backend reads the refresh token from the HttpOnly cookie
+            // (sent automatically because withCredentials: true is set).
             const { data } = await axios.post(
               `${api.defaults.baseURL}/auth/refresh`,
-              storedRefreshToken ? { refreshToken: storedRefreshToken } : {},
+              {},
               { withCredentials: true },
             );
-            useAuthStore.getState().setSession({ accessToken: data.accessToken, refreshToken: data.refreshToken });
+            useAuthStore.getState().setSession({
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+            });
           } catch (e) {
             useAuthStore.getState().clearSession();
             throw e;
@@ -43,10 +47,15 @@ api.interceptors.response.use(
         })();
       }
 
-      return refreshPromise.then(() => {
-        originalRequest.headers.Authorization = `Bearer ${useAuthStore.getState().accessToken}`;
-        return api(originalRequest);
-      });
+      // Attach both a success and failure handler so queued requests
+      // don't hang if the refresh itself fails.
+      return refreshPromise.then(
+        () => {
+          originalRequest.headers.Authorization = `Bearer ${useAuthStore.getState().accessToken}`;
+          return api(originalRequest);
+        },
+        () => Promise.reject(error),
+      );
     }
 
     return Promise.reject(error);

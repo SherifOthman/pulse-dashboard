@@ -29,6 +29,7 @@ import {
 import { useDoctorDetails, useDeleteDoctor } from './use-doctors'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { MapView } from '@/components/map-view'
+import { toAbsoluteUrl } from '@/services/image-url'
 import type { WorkingDayDto, PhoneNumberDto, BranchDto, TestimonialDto } from './types'
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -108,15 +109,12 @@ function PhoneItem({ phone }: { phone: PhoneNumberDto }) {
 }
 
 function BranchCard({ branch }: { branch: BranchDto }) {
+  const [showMap, setShowMap] = useState(false)
   return (
     <Card variant="secondary" className="p-3 flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          {branch.profileImageUrl ? (
-            <img src={branch.profileImageUrl} alt={branch.name} className="h-full w-full rounded-lg object-cover" />
-          ) : (
-            <Building2 className="h-4 w-4 text-primary" />
-          )}
+          <Building2 className="h-4 w-4 text-primary" />
         </div>
         <div>
           <p className="text-sm font-semibold text-foreground">{branch.name}</p>
@@ -157,6 +155,17 @@ function BranchCard({ branch }: { branch: BranchDto }) {
             </div>
           ))}
         </div>
+      )}
+      {branch.latitude != null && branch.longitude != null && (
+        <>
+          <Button variant="ghost" size="sm" onPress={() => setShowMap((v) => !v)}>
+            <MapPin className="h-3.5 w-3.5" />
+            {showMap ? 'إخفاء الخريطة' : 'عرض على الخريطة'}
+          </Button>
+          {showMap && (
+            <MapView lat={branch.latitude} lng={branch.longitude} height={180} />
+          )}
+        </>
       )}
     </Card>
   )
@@ -214,7 +223,7 @@ export function DoctorDetailsPage() {
       <div className="relative h-52 w-full overflow-hidden rounded-2xl bg-surface-secondary mb-6">
         {details.coverImageUrl || details.profileImageUrl ? (
           <img
-            src={details.coverImageUrl ?? details.profileImageUrl!}
+            src={toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? ''}
             alt={details.name}
             className="h-full w-full object-cover"
           />
@@ -232,7 +241,7 @@ export function DoctorDetailsPage() {
           <Badge.Anchor>
             <Avatar size="lg" className="border-2 border-surface shadow-sm">
               {details.profileImageUrl ? (
-                <Avatar.Image src={details.profileImageUrl} alt={details.name} />
+                <Avatar.Image src={toAbsoluteUrl(details.profileImageUrl) ?? details.profileImageUrl} alt={details.name} />
               ) : null}
               <Avatar.Fallback>
                 <UserRound className="h-7 w-7" />

@@ -25,7 +25,8 @@ import {
 import { ConfirmModal } from '@/components/confirm-modal'
 import { MapView } from '@/components/map-view'
 import { BusinessServicesField } from './business-services-field'
-import type { BusinessDetailsDto, WorkingDayDto, PhoneNumberDto, TestimonialDto } from '@/types/shared'
+import { toAbsoluteUrl } from '@/services/image-url'
+import type { BusinessDetailsDto, BranchDto, WorkingDayDto, PhoneNumberDto, TestimonialDto } from '@/types/shared'
 
 const DAY_NAMES: Record<number, string> = {
   0: 'الأحد', 1: 'الاثنين', 2: 'الثلاثاء', 3: 'الأربعاء',
@@ -97,6 +98,72 @@ function PhoneItem({ phone }: { phone: PhoneNumberDto }) {
   )
 }
 
+function BranchCard({ branch }: { branch: BranchDto }) {
+  const [showMap, setShowMap] = useState(false)
+  return (
+    <Card variant="secondary" className="p-3 flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <Avatar size="sm" className="rounded-lg shrink-0">
+          <Avatar.Fallback className="rounded-lg">
+            <Building2 className="h-4 w-4" />
+          </Avatar.Fallback>
+        </Avatar>
+        <div>
+          <p className="text-sm font-semibold text-foreground">{branch.name}</p>
+          {(branch.city || branch.governorate) && (
+            <p className="text-xs text-muted">{[branch.city, branch.governorate].filter(Boolean).join(' - ')}</p>
+          )}
+        </div>
+        {branch.isOpen != null && (
+          <Chip size="sm" variant="soft" color={branch.isOpen ? 'success' : 'default'} className="mr-auto">
+            <Clock className="h-3 w-3" />
+            <Chip.Label>{branch.isOpen ? 'مفتوح' : 'مغلق'}</Chip.Label>
+          </Chip>
+        )}
+      </div>
+      {branch.address && (
+        <div className="flex items-center gap-1.5 text-xs text-muted">
+          <MapPin className="h-3 w-3 shrink-0" />
+          {branch.address}
+        </div>
+      )}
+      {branch.phoneNumbers.length > 0 && (
+        <div className="flex flex-col gap-1">
+          {branch.phoneNumbers.map((p, i) => (
+            <div key={i} className="flex items-center gap-1.5 text-xs text-muted">
+              <Phone className="h-3 w-3 shrink-0" />
+              <span dir="ltr">{p.number}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {branch.workingDays.length > 0 && (
+        <div className="flex flex-col gap-0.5 mt-1">
+          {branch.workingDays.map((d) => (
+            <div key={d.day} className="flex justify-between text-xs">
+              <span className="text-foreground">{DAY_NAMES[d.day]}</span>
+              <span className="text-muted font-mono" dir="ltr">
+                {formatTime(d.startTime)} – {formatTime(d.endTime)}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      {branch.latitude != null && branch.longitude != null && (
+        <>
+          <Button variant="ghost" size="sm" onPress={() => setShowMap((v) => !v)}>
+            <MapPin className="h-3.5 w-3.5" />
+            {showMap ? 'إخفاء الخريطة' : 'عرض على الخريطة'}
+          </Button>
+          {showMap && (
+            <MapView lat={branch.latitude} lng={branch.longitude} height={180} />
+          )}
+        </>
+      )}
+    </Card>
+  )
+}
+
 function TestimonialCard({ t }: { t: TestimonialDto }) {
   return (
     <Card variant="secondary" className="p-3 flex flex-col gap-1.5">
@@ -156,7 +223,7 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
       <div className="relative h-52 w-full overflow-hidden rounded-2xl bg-surface-secondary mb-6">
         {details.coverImageUrl || details.profileImageUrl ? (
           <img
-            src={details.coverImageUrl ?? details.profileImageUrl!}
+            src={toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? ''}
             alt={details.name}
             className="h-full w-full object-cover"
           />
@@ -173,7 +240,7 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
         <div className="flex items-center gap-4">
           <Avatar size="lg" className="border-2 border-surface shadow-sm">
             {details.profileImageUrl ? (
-              <Avatar.Image src={details.profileImageUrl} alt={details.name} />
+              <Avatar.Image src={toAbsoluteUrl(details.profileImageUrl) ?? details.profileImageUrl} alt={details.name} />
             ) : null}
             <Avatar.Fallback>
               <div className="h-full w-full flex items-center justify-center text-muted">{coverIcon}</div>
@@ -329,7 +396,11 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
         <Tabs.Panel id="branches" className="pt-4">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted">{details.branches.length} فرع</span>
+              <span className="text-sm text-muted">
+            {details.branches.length > 0
+              ? `${details.branches.length} فرع مسجل`
+              : 'لا توجد فروع'}
+          </span>
               <Button
                 variant="primary"
                 size="sm"
@@ -340,29 +411,8 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
               </Button>
             </div>
             {details.branches.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                {details.branches.map((b) => (
-                  <Card key={b.id} className="p-3 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar size="sm" className="rounded-lg">
-                        {b.profileImageUrl ? <Avatar.Image src={b.profileImageUrl} alt={b.name} /> : null}
-                        <Avatar.Fallback className="rounded-lg">
-                          <Building2 className="h-4 w-4" />
-                        </Avatar.Fallback>
-                      </Avatar>
-                      <div>
-                        <span className="text-sm font-medium text-foreground">{b.name}</span>
-                        <p className="text-xs text-muted">
-                          {[b.city, b.governorate].filter(Boolean).join(' - ') || '—'}
-                        </p>
-                      </div>
-                    </div>
-                    <Chip size="sm" variant="soft" color={b.isOpen ? 'success' : 'default'}>
-                      <Clock className="h-3 w-3" />
-                      <Chip.Label>{b.isOpen ? 'مفتوح' : 'مغلق'}</Chip.Label>
-                    </Chip>
-                  </Card>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {details.branches.map((br) => <BranchCard key={br.id} branch={br} />)}
               </div>
             ) : (
               <Card className="p-8 flex flex-col items-center gap-3 text-muted">

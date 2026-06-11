@@ -36,7 +36,12 @@ export function AppSelect({
   return (
     <Select
       value={value || null}
-      onChange={(key) => onChange?.(key as string)}
+      onChange={(key) => {
+        // Guard against null/undefined keys that could clear a controlled value
+        if (key != null) {
+          onChange?.(key as string)
+        }
+      }}
       isDisabled={isDisabled}
       isInvalid={isInvalid}
       className={className}

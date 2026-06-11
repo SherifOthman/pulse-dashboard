@@ -21,6 +21,7 @@ import type { DoctorListItem } from './types'
 import type { GovernorateDto } from '@/features/cities/types'
 import type { SpecializationDto } from '@/features/specializations/types'
 import api from '@/services/api'
+import { toAbsoluteUrl } from '@/services/image-url'
 
 const PAGE_SIZE = 10
 
@@ -222,7 +223,7 @@ export function DoctorsPage() {
                           <Avatar size="sm">
                             {doctor.profileImageUrl ? (
                               <Avatar.Image
-                                src={doctor.profileImageUrl}
+                                src={toAbsoluteUrl(doctor.profileImageUrl) ?? doctor.profileImageUrl}
                                 alt={doctor.name}
                               />
                             ) : null}
@@ -288,8 +289,7 @@ export function DoctorsPage() {
                             variant="ghost"
                             isIconOnly
                             aria-label="تعديل"
-                            onPress={(e) => {
-                              e?.continuePropagation?.()
+                            onPress={() => {
                               navigate(`/doctors/${doctor.id}/edit`)
                             }}
                           >
@@ -331,6 +331,7 @@ export function DoctorsPage() {
         isOpen={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
+        isPending={deleteMutation.isPending}
         title="حذف الطبيب"
         message={`هل أنت متأكد من حذف "${deleteTarget?.name}"؟ لا يمكن التراجع عن هذا الإجراء.`}
       />

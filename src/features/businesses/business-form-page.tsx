@@ -18,12 +18,12 @@ type UseDetailsResult = {
 }
 
 type UseCreateResult = {
-  mutate: (dto: CreateBusinessDto, opts?: { onSuccess?: (result: { id: string }) => void; onError?: () => void }) => void
+  mutate: (dto: CreateBusinessDto, opts?: { onSuccess?: (result: { id: string }) => void; onError?: (err: unknown) => void }) => void
   isPending: boolean
 }
 
 type UseUpdateResult = {
-  mutate: (args: { id: string; dto: Partial<CreateBusinessDto> }, opts?: { onSuccess?: () => void; onError?: () => void }) => void
+  mutate: (args: { id: string; dto: Partial<CreateBusinessDto> }, opts?: { onSuccess?: () => void; onError?: (err: unknown) => void }) => void
   isPending: boolean
 }
 
@@ -79,10 +79,10 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
   const methods = useForm<BusinessFormValues>({
     resolver: zodResolver(businessFormSchema),
     defaultValues: businessFormDefaults,
-    mode: 'onBlur',
+    mode: 'all',
   })
 
-  const { handleSubmit, reset, watch } = methods
+  const { handleSubmit, reset, watch, setError, clearErrors } = methods
 
   useEffect(() => {
     if (existing) {
@@ -114,6 +114,7 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
   }, [existing, reset])
 
   const onSubmit = (data: BusinessFormValues) => {
+    clearErrors()
     const dto = createDto(data)
 
     if (isEdit) {
@@ -124,21 +125,33 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
             toast.success('تم الحفظ بنجاح')
             navigate(`${backRoute}/${id}`)
           },
-          onError: (err: unknown) => {
-            const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-            toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+          onError: (err: any) => {
+            if (err?.response?.data?.errors) {
+              Object.entries(err.response.data.errors).forEach(([field, messages]) => {
+                // @ts-ignore
+                setError(field as any, { message: (messages as string[])[0] })
+              })
+            }
+            const msg = err?.response?.data?.error || 'حدث خطأ، تحقق من البيانات'
+            toast.danger(msg)
           },
         },
       )
     } else {
       createMutation.mutate(dto, {
-        onSuccess: (result) => {
+        onSuccess: (result: any) => {
           toast.success('تمت الإضافة بنجاح')
           navigate(`${backRoute}/${result.id}`)
         },
-        onError: (err: unknown) => {
-          const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-          toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+        onError: (err: any) => {
+          if (err?.response?.data?.errors) {
+            Object.entries(err.response.data.errors).forEach(([field, messages]) => {
+              // @ts-ignore
+              setError(field as any, { message: (messages as string[])[0] })
+            })
+          }
+          const msg = err?.response?.data?.error || 'حدث خطأ، تحقق من البيانات'
+          toast.danger(msg)
         },
       })
     }
@@ -185,7 +198,10 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
 
       {/* ── Form ── */}
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit, (errors) => {
+            console.error('Form validation failed:', errors)
+            toast.danger('تحقق من البيانات المدخلة')
+          })} noValidate>
           <BusinessFormFields singularLabel={singularLabel} segment={segment} />
 
           {/* ── Actions ── */}

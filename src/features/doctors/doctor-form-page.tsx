@@ -1,75 +1,83 @@
-import { useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { useForm, FormProvider } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, Breadcrumbs, Separator, toast } from '@heroui/react'
-import { Building2, Save } from 'lucide-react'
-import { useDoctorDetails, useCreateDoctor, useUpdateDoctor } from './use-doctors'
-import { DoctorFormFields } from './components/doctor-form-fields'
-import { ServicesField } from './components/services-field'
+import { Breadcrumbs, Button, Separator, toast } from "@heroui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Building2, Save } from "lucide-react";
+import { useEffect } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import { DoctorFormFields } from "./components/doctor-form-fields";
 import {
-  doctorFormSchema,
   doctorFormDefaults,
+  doctorFormSchema,
   type DoctorFormValues,
-} from './components/doctor-form-schema'
+} from "./components/doctor-form-schema";
+import { ServicesField } from "./components/services-field";
 import {
-  mapWorkingDaysToForm,
   formToWorkingDays,
-} from './components/working-days-field'
+  mapWorkingDaysToForm,
+} from "./components/working-days-field";
+import {
+  useCreateDoctor,
+  useDoctorDetails,
+  useUpdateDoctor,
+} from "./use-doctors";
 
 export function DoctorFormPage() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const isEdit = !!id
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const isEdit = !!id;
 
-  const { data: existing, isLoading: loadingExisting } = useDoctorDetails(isEdit ? id : null)
-  const createMutation = useCreateDoctor()
-  const updateMutation = useUpdateDoctor()
+  const { data: existing, isLoading: loadingExisting } = useDoctorDetails(
+    isEdit ? id : null,
+  );
+  const createMutation = useCreateDoctor();
+  const updateMutation = useUpdateDoctor();
 
-  const isPending = createMutation.isPending || updateMutation.isPending
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   const methods = useForm<DoctorFormValues>({
     resolver: zodResolver(doctorFormSchema),
     defaultValues: doctorFormDefaults,
-    mode: 'onTouched',
-  })
+    mode: "all",
+  });
 
-  const { handleSubmit, reset, watch } = methods
+  const { handleSubmit, reset, watch, setError, clearErrors } = methods;
 
   // Populate form when editing
   useEffect(() => {
     if (existing) {
       reset({
-        name:            existing.name,
-        specializationId: existing.specializationId || '',
-        governorateId:   existing.governorateId    || '',
-        cityId:          existing.cityId           || '',
-        description:     existing.description      || '',
-        address:         existing.address          || '',
-        visitPrice:      existing.visitPrice?.toString() || '',
-        gender:          existing.gender?.toString() || '',
-        profileImageUrl: existing.profileImageUrl  || '',
-        coverImageUrl:   existing.coverImageUrl    || '',
-        latitude:        existing.latitude  ?? null,
-        longitude:       existing.longitude ?? null,
-        workingDays:     mapWorkingDaysToForm(existing.workingDays),
-        phoneNumbers:    existing.phoneNumbers.map((p) => ({
+        name: existing.name,
+        specializationId: existing.specializationId || "",
+        governorateId: existing.governorateId || "",
+        cityId: existing.cityId || "",
+        description: existing.description || "",
+        address: existing.address || "",
+        gender: existing.gender?.toString() || "",
+        profileImageUrl: existing.profileImageUrl || "",
+        coverImageUrl: existing.coverImageUrl || "",
+        latitude: existing.latitude ?? null,
+        longitude: existing.longitude ?? null,
+        workingDays: mapWorkingDaysToForm(existing.workingDays),
+        phoneNumbers: existing.phoneNumbers.map((p) => ({
           number: p.number,
-          type:   p.type || '',
+          type: p.type || "",
         })),
-      })
+      });
     }
-  }, [existing, reset])
+  }, [existing, reset]);
 
   const onSubmit = (data: DoctorFormValues) => {
+    clearErrors();
     const dto = {
       name: data.name.trim(),
       specializationId: data.specializationId || undefined,
       cityId: data.cityId || undefined,
       description: data.description?.trim() || undefined,
       address: data.address?.trim() || undefined,
-      visitPrice: data.visitPrice ? parseFloat(data.visitPrice) : undefined,
-      gender: data.gender !== '' && data.gender !== undefined ? parseInt(data.gender) : undefined,
+      gender:
+        data.gender !== "" && data.gender !== undefined
+          ? parseInt(data.gender)
+          : undefined,
       profileImageUrl: data.profileImageUrl || undefined,
       coverImageUrl: data.coverImageUrl || undefined,
       latitude: data.latitude ?? undefined,
@@ -77,42 +85,63 @@ export function DoctorFormPage() {
       workingDays: formToWorkingDays(data.workingDays),
       phoneNumbers:
         data.phoneNumbers.filter((p) => p.number.trim()).length > 0
-          ? data.phoneNumbers.filter((p) => p.number.trim()).map((p) => ({
-              number: p.number.trim(),
-              type: p.type?.trim() || null,
-            }))
+          ? data.phoneNumbers
+              .filter((p) => p.number.trim())
+              .map((p) => ({
+                number: p.number.trim(),
+                type: p.type?.trim() || null,
+              }))
           : undefined,
-    }
+    };
 
     if (isEdit) {
       updateMutation.mutate(
         { id: id!, dto },
         {
           onSuccess: () => {
-            toast.success('تم الحفظ بنجاح')
-            navigate(`/doctors/${id}`)
+            toast.success("تم الحفظ بنجاح");
+            navigate(`/doctors/${id}`);
           },
-          onError: (err: unknown) => {
-            const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-            toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+          onError: (err: any) => {
+            if (err?.response?.data?.errors) {
+              Object.entries(err.response.data.errors).forEach(
+                ([field, messages]) => {
+                  // @ts-ignore
+                  setError(field as any, {
+                    message: (messages as string[])[0],
+                  });
+                },
+              );
+            }
+            const msg =
+              err?.response?.data?.error || "حدث خطأ، تحقق من البيانات";
+            toast.danger(msg);
           },
         },
-      )
+      );
     } else {
       createMutation.mutate(dto, {
         onSuccess: (result) => {
-          toast.success('تمت الإضافة بنجاح')
-          navigate(`/doctors/${result.id}`)
+          toast.success("تمت الإضافة بنجاح");
+          navigate(`/doctors/${result.id}`);
         },
-        onError: (err: unknown) => {
-          const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
-          toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+        onError: (err: any) => {
+          if (err?.response?.data?.errors) {
+            Object.entries(err.response.data.errors).forEach(
+              ([field, messages]) => {
+                // @ts-ignore
+                setError(field as any, { message: (messages as string[])[0] });
+              },
+            );
+          }
+          const msg = err?.response?.data?.error || "حدث خطأ، تحقق من البيانات";
+          toast.danger(msg);
         },
-      })
+      });
     }
-  }
+  };
 
-  const nameValue = watch('name')
+  const nameValue = watch("name");
 
   return (
     <div dir="rtl" className="max-w-3xl mx-auto pb-8 doctor-form-scroll-root">
@@ -120,9 +149,11 @@ export function DoctorFormPage() {
       <Breadcrumbs className="mb-4" onAction={(key) => navigate(String(key))}>
         <Breadcrumbs.Item id="/doctors">الأطباء</Breadcrumbs.Item>
         {isEdit && existing ? (
-          <Breadcrumbs.Item id={`/doctors/${id}`}>{existing.name}</Breadcrumbs.Item>
+          <Breadcrumbs.Item id={`/doctors/${id}`}>
+            {existing.name}
+          </Breadcrumbs.Item>
         ) : null}
-        <Breadcrumbs.Item>{isEdit ? 'تعديل' : 'إضافة طبيب'}</Breadcrumbs.Item>
+        <Breadcrumbs.Item>{isEdit ? "تعديل" : "إضافة طبيب"}</Breadcrumbs.Item>
       </Breadcrumbs>
 
       {/* ── Page title ── */}
@@ -130,9 +161,9 @@ export function DoctorFormPage() {
         <h1 className="text-xl font-bold text-foreground">
           {isEdit
             ? loadingExisting
-              ? '...'
+              ? "..."
               : `تعديل: ${existing?.name}`
-            : 'إضافة طبيب جديد'}
+            : "إضافة طبيب جديد"}
         </h1>
       </div>
 
@@ -140,7 +171,10 @@ export function DoctorFormPage() {
 
       {/* ── Form ── */}
       <FormProvider {...methods}>
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form onSubmit={handleSubmit(onSubmit, (errors) => {
+            console.error('Form validation failed:', errors)
+            toast.danger('تحقق من البيانات المدخلة')
+          })} noValidate>
           <DoctorFormFields />
 
           {/* ── Services (edit mode only — needs existing doctor ID) ── */}
@@ -175,12 +209,12 @@ export function DoctorFormPage() {
               isDisabled={!nameValue?.trim()}
             >
               <Save className="h-4 w-4" />
-              {isEdit ? 'حفظ التعديلات' : 'إضافة الطبيب'}
+              {isEdit ? "حفظ التعديلات" : "إضافة الطبيب"}
             </Button>
             <Button
               variant="ghost"
               type="button"
-              onPress={() => navigate(isEdit ? `/doctors/${id}` : '/doctors')}
+              onPress={() => navigate(isEdit ? `/doctors/${id}` : "/doctors")}
               isDisabled={isPending}
             >
               إلغاء
@@ -189,5 +223,5 @@ export function DoctorFormPage() {
         </form>
       </FormProvider>
     </div>
-  )
+  );
 }

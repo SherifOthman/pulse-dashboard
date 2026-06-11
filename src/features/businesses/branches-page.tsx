@@ -12,6 +12,7 @@ import {
 import { Building2, Clock, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { BranchFormModal } from './branch-form-modal'
+import { toAbsoluteUrl } from '@/services/image-url'
 import type { BranchDetails, BranchListItem, CreateBranchDto } from '@/types/shared'
 
 type Props = {
@@ -147,7 +148,7 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
                         <div className="flex items-center gap-3">
                           <Avatar size="sm" className="rounded-lg">
                             {b.profileImageUrl
-                              ? <Avatar.Image src={b.profileImageUrl} alt={b.name} />
+                              ? <Avatar.Image src={toAbsoluteUrl(b.profileImageUrl) ?? b.profileImageUrl} alt={b.name} />
                               : null}
                             <Avatar.Fallback className="rounded-lg">
                               <Building2 className="h-4 w-4" />
