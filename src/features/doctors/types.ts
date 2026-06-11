@@ -75,6 +75,7 @@ export type DoctorDetailsDto = {
   branches: BranchDto[]
   testimonials: TestimonialDto[]
   services: ServiceDto[]
+  specializationId: string
   specialization: string
   visitPrice: number | null
 }

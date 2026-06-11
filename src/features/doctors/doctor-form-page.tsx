@@ -39,22 +39,22 @@ export function DoctorFormPage() {
   useEffect(() => {
     if (existing) {
       reset({
-        name: existing.name,
-        specializationId: '',
-        governorateId: '',
-        cityId: existing.cityId || '',
-        description: existing.description || '',
-        address: existing.address || '',
-        visitPrice: existing.visitPrice?.toString() || '',
-        gender: existing.gender?.toString() || '',
-        profileImageUrl: existing.profileImageUrl || '',
-        coverImageUrl: existing.coverImageUrl || '',
-        latitude: existing.latitude ?? null,
-        longitude: existing.longitude ?? null,
-        workingDays: mapWorkingDaysToForm(existing.workingDays),
-        phoneNumbers: existing.phoneNumbers.map((p) => ({
+        name:            existing.name,
+        specializationId: existing.specializationId || '',
+        governorateId:   existing.governorateId    || '',
+        cityId:          existing.cityId           || '',
+        description:     existing.description      || '',
+        address:         existing.address          || '',
+        visitPrice:      existing.visitPrice?.toString() || '',
+        gender:          existing.gender?.toString() || '',
+        profileImageUrl: existing.profileImageUrl  || '',
+        coverImageUrl:   existing.coverImageUrl    || '',
+        latitude:        existing.latitude  ?? null,
+        longitude:       existing.longitude ?? null,
+        workingDays:     mapWorkingDaysToForm(existing.workingDays),
+        phoneNumbers:    existing.phoneNumbers.map((p) => ({
           number: p.number,
-          type: p.type || '',
+          type:   p.type || '',
         })),
       })
     }
@@ -75,10 +75,12 @@ export function DoctorFormPage() {
       longitude: data.longitude ?? undefined,
       workingDays: formToWorkingDays(data.workingDays),
       phoneNumbers:
-        data.phoneNumbers.filter((p) => p.number.trim()).map((p) => ({
-          number: p.number.trim(),
-          type: p.type?.trim() || null,
-        })) || undefined,
+        data.phoneNumbers.filter((p) => p.number.trim()).length > 0
+          ? data.phoneNumbers.filter((p) => p.number.trim()).map((p) => ({
+              number: p.number.trim(),
+              type: p.type?.trim() || null,
+            }))
+          : undefined,
     }
 
     if (isEdit) {

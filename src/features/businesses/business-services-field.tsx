@@ -1,50 +1,50 @@
 /**
- * ServicesField
+ * BusinessServicesField
  *
- * Standalone component that manages a doctor's service list via direct API calls.
- * Does NOT use react-hook-form — persists immediately on every add/remove.
- *
- * - Current services shown as removable Chips
- * - Dropdown to pick from existing Doctor-type services
- * - Inline text input to create a brand-new service
+ * Manages services for any business type (Pharmacy, Lab, Radiology).
+ * Shown in the edit modal after a business has been created.
+ * Persists immediately on every add/remove.
  */
 import { useState } from 'react'
 import { Button, Chip, Input, Spinner, toast } from '@heroui/react'
 import { Plus, Tag, X } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useAvailableServices, useDoctorServices, serviceKeys } from '../use-services'
-import { updateDoctorServices } from '../services-api'
-import type { DoctorServiceDto } from '../services-api'
+import {
+  useAvailableBusinessServices,
+  useLinkedBusinessServices,
+  businessServiceKeys,
+} from './use-business-services'
+import { updateBusinessServices } from './business-services-api'
+import type { BusinessServiceDto, BusinessServiceItem } from './business-services-api'
 
-type Props = { doctorId: string }
+type Props = {
+  segment:    string   // "pharmacies" | "labs" | "radiology"
+  businessId: string
+}
 
-export function ServicesField({ doctorId }: Props) {
-  const [newName, setNewName]       = useState('')
-  const [dropdownOpen, setDropdown] = useState(false)
-  const [isPending, setIsPending]   = useState(false)
+export function BusinessServicesField({ segment, businessId }: Props) {
+  const [newName, setNewName]     = useState('')
+  const [dropdown, setDropdown]   = useState(false)
+  const [isPending, setIsPending] = useState(false)
   const qc = useQueryClient()
 
-  const { data: available = [], isLoading: loadingAvailable } = useAvailableServices()
-  const { data: current   = [], isLoading: loadingCurrent   } = useDoctorServices(doctorId)
+  const { data: available = [], isLoading: loadingAvail } = useAvailableBusinessServices(segment)
+  const { data: current   = [], isLoading: loadingCurr  } = useLinkedBusinessServices(segment, businessId)
 
   const currentIds = new Set(current.map((s) => s.id))
   const pickable   = available.filter((s) => !currentIds.has(s.id))
-  const isLoading  = loadingCurrent || loadingAvailable
+  const isLoading  = loadingCurr || loadingAvail
 
-  // ── Central mutate helper — uses current data from cache directly ──────────
-  async function persist(services: DoctorServiceDto[], newServiceName?: string) {
+  async function persist(services: BusinessServiceDto[], newServiceName?: string) {
     setIsPending(true)
     try {
-      const payload = newServiceName
+      const payload: BusinessServiceItem[] = newServiceName
         ? [...services.map((s) => ({ id: s.id })), { name: newServiceName }]
         : services.map((s) => ({ id: s.id }))
 
-      const result = await updateDoctorServices(doctorId, payload)
-
-      // Update cache with the response — avoids stale-state issues
-      qc.setQueryData(serviceKeys.doctor(doctorId), result.services)
-      // Invalidate available list in case a new service was created
-      qc.invalidateQueries({ queryKey: serviceKeys.available })
+      const result = await updateBusinessServices(segment, businessId, payload)
+      qc.setQueryData(businessServiceKeys.linked(segment, businessId), result.services)
+      qc.invalidateQueries({ queryKey: businessServiceKeys.available(segment) })
     } catch {
       toast.danger('حدث خطأ، تحقق من الاتصال وحاول مرة أخرى')
     } finally {
@@ -52,7 +52,7 @@ export function ServicesField({ doctorId }: Props) {
     }
   }
 
-  function addExisting(service: DoctorServiceDto) {
+  function addExisting(service: BusinessServiceDto) {
     setDropdown(false)
     persist([...current, service])
   }
@@ -65,7 +65,6 @@ export function ServicesField({ doctorId }: Props) {
     const trimmed = newName.trim()
     if (!trimmed) return
 
-    // If it already exists in available list, just link it
     const existing = available.find(
       (s) => s.name.toLowerCase() === trimmed.toLowerCase(),
     )
@@ -78,12 +77,10 @@ export function ServicesField({ doctorId }: Props) {
       }
       persist([...current, existing]).then(() => setNewName(''))
     } else {
-      // New service — backend will create it
       persist(current, trimmed).then(() => setNewName(''))
     }
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-3">
       {/* Header */}
@@ -126,9 +123,7 @@ export function ServicesField({ doctorId }: Props) {
       {pickable.length > 0 && (
         <div className="relative">
           <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+            type="button" variant="ghost" size="sm"
             onPress={() => setDropdown((o) => !o)}
             isDisabled={isPending}
           >
@@ -136,15 +131,14 @@ export function ServicesField({ doctorId }: Props) {
             إضافة خدمة موجودة
           </Button>
 
-          {dropdownOpen && (
+          {dropdown && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setDropdown(false)} />
               <div className="absolute top-full mt-1 right-0 z-20 w-64 rounded-xl border border-divider bg-surface shadow-lg overflow-hidden">
                 <div className="max-h-52 overflow-y-auto">
                   {pickable.map((s) => (
                     <button
-                      key={s.id}
-                      type="button"
+                      key={s.id} type="button"
                       onClick={() => addExisting(s)}
                       className="w-full px-3 py-2.5 text-right text-sm text-foreground hover:bg-surface-secondary transition-colors border-b border-divider last:border-0"
                     >
@@ -183,9 +177,7 @@ export function ServicesField({ doctorId }: Props) {
           )}
         </div>
         <Button
-          type="button"
-          variant="secondary"
-          size="sm"
+          type="button" variant="secondary" size="sm"
           onPress={createNew}
           isDisabled={!newName.trim() || isPending}
         >

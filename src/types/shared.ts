@@ -47,6 +47,7 @@ export type BranchDto = {
   longitude: number | null
   phoneNumbers: PhoneNumberDto[]
   workingDays: WorkingDayDto[]
+  isOpen?: boolean
 }
 
 export type TestimonialDto = {
@@ -79,6 +80,8 @@ export type BusinessDetailsDto = {
   address: string | null
   governorate: string
   city: string
+  governorateId?: string
+  cityId?: string
   latitude: number | null
   longitude: number | null
   averageRating: number
@@ -100,4 +103,40 @@ export type CreateBusinessDto = {
   coverImageUrl?: string
   latitude?: number | null
   longitude?: number | null
+  services?: { id?: string; name?: string }[]
+}
+
+// ── Branch types (shared across pharmacy, lab, radiology, doctor) ──────────────
+
+export type BranchListItem = {
+  id: string
+  name: string
+  profileImageUrl: string | null
+  governorate: string | null
+  city: string | null
+  isOpen: boolean
+}
+
+export type BranchDetails = {
+  id: string
+  name: string
+  address: string | null
+  governorate: string
+  governorateId: string
+  city: string
+  cityId: string
+  latitude: number | null
+  longitude: number | null
+  workingDays: WorkingDayDto[]
+  phoneNumbers: PhoneNumberDto[]
+}
+
+export type CreateBranchDto = {
+  name: string
+  cityId?: string
+  address?: string
+  latitude?: number | null
+  longitude?: number | null
+  workingDays?: WorkingDayDto[]
+  phoneNumbers?: PhoneNumberDto[]
 }
