@@ -141,7 +141,7 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
   const nameValue = watch('name')
 
   return (
-    <div dir="rtl" className="max-w-3xl mx-auto pb-8">
+    <div dir="rtl" className="max-w-3xl mx-auto pb-8 doctor-form-scroll-root">
       {/* ── Breadcrumbs ── */}
       <Breadcrumbs className="mb-4" onAction={(key) => navigate(String(key))}>
         <Breadcrumbs.Item id={backRoute}>{singularLabel}</Breadcrumbs.Item>
