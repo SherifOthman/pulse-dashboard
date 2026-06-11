@@ -124,7 +124,10 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
             toast.success('تم الحفظ بنجاح')
             navigate(`${backRoute}/${id}`)
           },
-          onError: () => toast.danger('حدث خطأ، تحقق من البيانات'),
+          onError: (err: unknown) => {
+            const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+            toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+          },
         },
       )
     } else {
@@ -133,7 +136,10 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
           toast.success('تمت الإضافة بنجاح')
           navigate(`${backRoute}/${result.id}`)
         },
-        onError: () => toast.danger('حدث خطأ، تحقق من البيانات'),
+        onError: (err: unknown) => {
+          const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+          toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+        },
       })
     }
   }

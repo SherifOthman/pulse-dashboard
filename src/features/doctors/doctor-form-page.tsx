@@ -31,7 +31,7 @@ export function DoctorFormPage() {
   const methods = useForm<DoctorFormValues>({
     resolver: zodResolver(doctorFormSchema),
     defaultValues: doctorFormDefaults,
-    mode: 'onBlur',
+    mode: 'onTouched',
   })
 
   const { handleSubmit, reset, watch } = methods
@@ -92,7 +92,10 @@ export function DoctorFormPage() {
             toast.success('تم الحفظ بنجاح')
             navigate(`/doctors/${id}`)
           },
-          onError: () => toast.danger('حدث خطأ، تحقق من البيانات'),
+          onError: (err: unknown) => {
+            const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+            toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+          },
         },
       )
     } else {
@@ -101,7 +104,10 @@ export function DoctorFormPage() {
           toast.success('تمت الإضافة بنجاح')
           navigate(`/doctors/${result.id}`)
         },
-        onError: () => toast.danger('حدث خطأ، تحقق من البيانات'),
+        onError: (err: unknown) => {
+          const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+          toast.danger(msg || 'حدث خطأ، تحقق من البيانات')
+        },
       })
     }
   }

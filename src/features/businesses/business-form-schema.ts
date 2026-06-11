@@ -15,7 +15,7 @@ const serviceSchema = z.object({
 const servicesSchema = z.array(serviceSchema)
 
 export const businessFormSchema = z.object({
-  name: z.string().min(1, 'الاسم مطلوب').max(250, 'الاسم طويل جداً'),
+  name: z.string().min(1, 'الاسم مطلوب').max(100, 'الاسم طويل جداً'),
   governorateId: z.string().optional(),
   cityId: z.string().optional(),
   description: z.string().optional(),

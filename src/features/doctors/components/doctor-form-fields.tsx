@@ -394,6 +394,13 @@ export function DoctorFormFields() {
 
       {/* ── Working days ── */}
       <WorkingDaysField />
+      {errors.workingDays?.root?.message && (
+        <p className="text-xs text-danger -mt-3">{errors.workingDays.root.message}</p>
+      )}
+      {/* Cross-field working days error from .refine() */}
+      {typeof errors.workingDays?.message === 'string' && (
+        <p className="text-xs text-danger -mt-3">{errors.workingDays.message}</p>
+      )}
 
     </div>
   )

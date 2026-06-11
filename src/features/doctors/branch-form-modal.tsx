@@ -17,7 +17,7 @@ import type { BranchDetails, CreateBranchDto } from './types'
 const timeRegex = /^\d{2}:\d{2}$/
 
 const branchFormSchema = z.object({
-  name: z.string().min(1, 'اسم الفرع مطلوب').max(250, 'الاسم طويل جداً'),
+  name: z.string().min(1, 'اسم الفرع مطلوب').max(100, 'الاسم طويل جداً'),
   governorateId: z.string().optional(),
   cityId: z.string().optional(),
   address: z.string().optional(),
