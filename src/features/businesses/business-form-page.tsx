@@ -79,6 +79,7 @@ export function BusinessFormPage({ useDetails, useCreate, useUpdate, singularLab
   const methods = useForm<BusinessFormValues>({
     resolver: zodResolver(businessFormSchema),
     defaultValues: businessFormDefaults,
+    mode: 'onBlur',
   })
 
   const { handleSubmit, reset, watch } = methods

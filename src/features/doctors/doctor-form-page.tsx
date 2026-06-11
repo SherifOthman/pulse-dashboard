@@ -31,6 +31,7 @@ export function DoctorFormPage() {
   const methods = useForm<DoctorFormValues>({
     resolver: zodResolver(doctorFormSchema),
     defaultValues: doctorFormDefaults,
+    mode: 'onBlur',
   })
 
   const { handleSubmit, reset, watch } = methods

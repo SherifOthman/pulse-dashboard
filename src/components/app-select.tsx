@@ -16,6 +16,7 @@ type AppSelectProps = {
   onChange?: (key: string) => void
   placeholder?: string
   isDisabled?: boolean
+  isInvalid?: boolean
   className?: string
   label?: string
   variant?: 'primary' | 'secondary'
@@ -27,6 +28,7 @@ export function AppSelect({
   onChange,
   placeholder = 'اختر...',
   isDisabled,
+  isInvalid,
   className = '',
   label,
   variant,
@@ -36,6 +38,7 @@ export function AppSelect({
       value={value || null}
       onChange={(key) => onChange?.(key as string)}
       isDisabled={isDisabled}
+      isInvalid={isInvalid}
       className={className}
       placeholder={placeholder}
       variant={variant}

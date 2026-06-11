@@ -200,9 +200,10 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                   name="governorateId"
                   control={control}
                   render={({ field }) => (
-                    <Field label="المحافظة">
+                    <Field label="المحافظة" error={errors.governorateId?.message}>
                       <AppSelect
                         variant="secondary"
+                        isInvalid={!!errors.governorateId}
                         options={governorates.map((g) => ({ id: g.id, label: g.name }))}
                         value={field.value || ''}
                         onChange={(val) => {
@@ -218,9 +219,10 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                   name="cityId"
                   control={control}
                   render={({ field }) => (
-                    <Field label="المدينة">
+                    <Field label="المدينة" error={errors.cityId?.message}>
                       <AppSelect
                         variant="secondary"
+                        isInvalid={!!errors.cityId}
                         options={cities.map((c) => ({ id: c.id, label: c.name }))}
                         value={field.value || ''}
                         onChange={field.onChange}
@@ -238,7 +240,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                   name="visitPrice"
                   control={control}
                   render={({ field }) => (
-                    <Field label="سعر الكشف (ج.م)">
+                    <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message}>
                       <Input {...field} variant="secondary" type="number" min="0" placeholder="0" />
                     </Field>
                   )}
@@ -247,7 +249,7 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
                   name="address"
                   control={control}
                   render={({ field }) => (
-                    <Field label="العنوان">
+                    <Field label="العنوان" error={errors.address?.message}>
                       <Input {...field} variant="secondary" placeholder="عنوان الفرع" />
                     </Field>
                   )}
@@ -261,6 +263,8 @@ export function BranchFormModal({ isOpen, onClose, onSubmit, isLoading, initial 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-foreground">الموقع على الخريطة</label>
                 <p className="text-xs text-muted -mt-1">انقر على الخريطة أو ابحث لتحديد موقع الفرع</p>
+                {errors.latitude?.message && <p className="text-xs text-danger">{errors.latitude.message}</p>}
+                {errors.longitude?.message && <p className="text-xs text-danger">{errors.longitude.message}</p>}
                 <Controller
                   name="latitude"
                   control={control}

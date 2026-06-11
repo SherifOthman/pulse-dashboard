@@ -225,7 +225,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
         name="description"
         control={control}
         render={({ field }) => (
-          <Field label="الوصف">
+          <Field label="الوصف" error={errors.description?.message}>
             <TextArea
               {...field}
               placeholder={`نبذة عن ${singularLabel || 'المنشأة'}...`}
@@ -242,9 +242,10 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
           name="governorateId"
           control={control}
           render={({ field }) => (
-            <Field label="المحافظة">
+            <Field label="المحافظة" error={errors.governorateId?.message}>
               <AppSelect
                 variant="secondary"
+                isInvalid={!!errors.governorateId}
                 options={governorates.map((g) => ({ id: g.id, label: g.name }))}
                 value={field.value || ''}
                 onChange={(val) => {
@@ -260,9 +261,10 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
           name="cityId"
           control={control}
           render={({ field }) => (
-            <Field label="المدينة">
+            <Field label="المدينة" error={errors.cityId?.message}>
               <AppSelect
                 variant="secondary"
+                isInvalid={!!errors.cityId}
                 options={cities.map((c) => ({ id: c.id, label: c.name }))}
                 value={field.value || ''}
                 onChange={field.onChange}
@@ -279,7 +281,7 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
         name="address"
         control={control}
         render={({ field }) => (
-          <Field label="العنوان">
+          <Field label="العنوان" error={errors.address?.message}>
             <Input {...field} variant="secondary" placeholder="عنوان تفصيلي" />
           </Field>
         )}
@@ -292,6 +294,8 @@ export function BusinessFormFields({ singularLabel = '', segment }: { singularLa
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-foreground">الموقع على الخريطة</label>
         <p className="text-xs text-muted -mt-1">اختياري — ابحث أو انقر على الخريطة لتحديد الموقع</p>
+        {errors.latitude?.message && <p className="text-xs text-danger">{errors.latitude.message}</p>}
+        {errors.longitude?.message && <p className="text-xs text-danger">{errors.longitude.message}</p>}
         <Controller
           name="latitude"
           control={control}

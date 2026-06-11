@@ -33,13 +33,16 @@ type Props = {
 }
 
 export function WorkingDaysField({ name = 'workingDays' }: Props) {
-  const { control, watch, setValue } = useFormContext()
+  const { control, watch, setValue, formState: { errors } } = useFormContext()
   const wds: WorkingDayEntry[] = watch(name)
   const lastTime = useRef({ startTime: '09:00', endTime: '17:00' })
 
   return (
     <div className="flex flex-col gap-2">
       <label className="text-sm font-medium text-foreground">أيام العمل</label>
+      {(errors as any)[name]?.message && (
+        <p className="text-xs text-danger">{(errors as any)[name].message}</p>
+      )}
       <div className="flex flex-col gap-1.5 overflow-hidden">
         {wds.map((wd, i) => (
           <div
