@@ -225,6 +225,14 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
 
     const trimmed = url.trim()
 
+    // Raw coordinates: "29.9745151, 31.2808435"
+    const rawCoords = parseRawCoords(trimmed)
+    if (rawCoords) {
+      onChange({ lat: parseFloat(rawCoords.lat.toFixed(6)), lng: parseFloat(rawCoords.lng.toFixed(6)) })
+      setFlyTarget([rawCoords.lat, rawCoords.lng])
+      return
+    }
+
     // Detect shortened URLs (maps.app.goo.gl or goo.gl) — resolve server-side
     if (/goo\.gl|maps\.app\.goo\.gl/.test(trimmed)) {
       setSearching(true)
