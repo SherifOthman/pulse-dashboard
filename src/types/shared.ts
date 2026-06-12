@@ -108,6 +108,8 @@ export type CreateBusinessDto = {
   coverImageUrl?: string;
   latitude?: number | null;
   longitude?: number | null;
+  workingDays?: WorkingDayDto[];
+  phoneNumbers?: { number: string; type: string | null }[];
   services?: { id?: string; name?: string }[];
 };
 
