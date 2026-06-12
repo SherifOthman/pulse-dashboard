@@ -82,27 +82,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
               {wd.enabled && (
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <TimeField
-                    value={toTime(wd.endTime)}
-                    onChange={(t: Time | null) => {
-                      if (t) {
-                        const s = fromTime(t)
-                        setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
-                        lastTime.current.endTime = s
-                      }
-                    }}
-                    className="flex-1 min-w-0"
-                    aria-label={`${DAY_NAMES[i]} وقت النهاية`}
-                  >
-                    <TimeField.Group variant="secondary" className="w-full" dir="ltr">
-                      <TimeField.Input>
-                        {(segment) => <TimeField.Segment segment={segment} />}
-                      </TimeField.Input>
-                    </TimeField.Group>
-                  </TimeField>
-
-                  <span className="text-muted shrink-0 text-sm">–</span>
-
-                  <TimeField
+                    locale="en-US"
                     value={toTime(wd.startTime)}
                     onChange={(t: Time | null) => {
                       if (t) {
@@ -114,7 +94,29 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                     className="flex-1 min-w-0"
                     aria-label={`${DAY_NAMES[i]} وقت البداية`}
                   >
-                    <TimeField.Group variant="secondary" className="w-full" dir="ltr">
+                    <TimeField.Group variant="secondary" className="w-full">
+                      <TimeField.Input>
+                        {(segment) => <TimeField.Segment segment={segment} />}
+                      </TimeField.Input>
+                    </TimeField.Group>
+                  </TimeField>
+
+                  <span className="text-muted shrink-0 text-sm">–</span>
+
+                  <TimeField
+                    locale="en-US"
+                    value={toTime(wd.endTime)}
+                    onChange={(t: Time | null) => {
+                      if (t) {
+                        const s = fromTime(t)
+                        setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
+                        lastTime.current.endTime = s
+                      }
+                    }}
+                    className="flex-1 min-w-0"
+                    aria-label={`${DAY_NAMES[i]} وقت النهاية`}
+                  >
+                    <TimeField.Group variant="secondary" className="w-full">
                       <TimeField.Input>
                         {(segment) => <TimeField.Segment segment={segment} />}
                       </TimeField.Input>
