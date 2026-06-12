@@ -30,7 +30,26 @@ const defaultIcon = L.divIcon({
   popupAnchor: [0, -42],
 })
 
-// ── Nominatim geocoding ───────────────────────────────────────────────────────
+// ── Parse Google Maps URL ─────────────────────────────────────────────────────
+// Handles formats:
+//   /@lat,lng,zoom        (standard place URL)
+//   ?q=lat,lng            (short link)
+//   /place/.../lat,lng    (some share links)
+function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
+  // Most common: /@29.9745151,31.2808435,17z
+  const atMatch = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/)
+  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) }
+
+  // ?q=lat,lng or ?q=lat%2Clng
+  const qMatch = url.match(/[?&]q=(-?\d+\.?\d*)[,%2C]+(-?\d+\.?\d*)/)
+  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) }
+
+  // !3d29.97!4d31.28 (data parameter format)
+  const dMatch = url.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/)
+  if (dMatch) return { lat: parseFloat(dMatch[1]), lng: parseFloat(dMatch[2]) }
+
+  return null
+}
 type NominatimResult = {
   place_id: number
   display_name: string
@@ -108,6 +127,8 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
   const [searching, setSearching] = useState(false)
   const [flyTarget, setFlyTarget] = useState<[number, number] | null>(null)
   const [locating, setLocating] = useState(false)
+  const [mapsUrl, setMapsUrl] = useState('')
+  const [mapsUrlError, setMapsUrlError] = useState(false)
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const position: [number, number] | null = value ? [value.lat, value.lng] : null
@@ -173,8 +194,52 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
     setSearchResults([])
   }
 
+  const handleMapsUrl = (url: string) => {
+    setMapsUrl(url)
+    setMapsUrlError(false)
+    if (!url.trim()) return
+    const coords = parseGoogleMapsUrl(url)
+    if (coords) {
+      onChange({ lat: parseFloat(coords.lat.toFixed(6)), lng: parseFloat(coords.lng.toFixed(6)) })
+      setFlyTarget([coords.lat, coords.lng])
+      setMapsUrlError(false)
+    } else {
+      setMapsUrlError(true)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-2">
+      {/* ── Google Maps URL paste ── */}
+      <div className="relative flex gap-2">
+        <div className="relative flex-1">
+          <Input
+            value={mapsUrl}
+            onChange={(e) => handleMapsUrl(e.target.value)}
+            variant="secondary"
+            placeholder="الصق رابط Google Maps هنا..."
+            dir="ltr"
+            className="w-full"
+            aria-label="رابط Google Maps"
+          />
+          {mapsUrl && (
+            <button
+              type="button"
+              onClick={() => { setMapsUrl(''); setMapsUrlError(false) }}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-10 text-muted hover:text-foreground transition-colors"
+              aria-label="مسح الرابط"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+      {mapsUrlError && (
+        <p className="text-xs text-danger px-1">
+          تعذّر استخراج الإحداثيات — تأكد من أن الرابط من Google Maps
+        </p>
+      )}
+
       {/* ── Search bar ── */}
       <div className="relative flex gap-2">
         <div className="relative flex-1">
