@@ -52,15 +52,16 @@ function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
 }
 
 // ── Resolve shortened Google Maps URL ────────────────────────────────────────
-// maps.app.goo.gl links are redirects — we resolve them via a CORS proxy to
-// get the full URL, then parse the coordinates from it.
+// maps.app.goo.gl links are redirects — we resolve them via our own backend
+// to get the full URL, then parse the coordinates from it.
 async function resolveShortUrl(url: string): Promise<string> {
-  // allorigins returns { contents, status { url } } — status.url is the final URL after redirects
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-  const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) })
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL || 'http://localhost:5170/dashboard'}/resolve-url?url=${encodeURIComponent(url)}`,
+    { credentials: 'include' },
+  )
+  if (!res.ok) return url
   const json = await res.json()
-  // allorigins returns the final URL in status.url
-  return json?.status?.url ?? url
+  return json?.url ?? url
 }
 type NominatimResult = {
   place_id: number
