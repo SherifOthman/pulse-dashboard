@@ -52,16 +52,19 @@ function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
 }
 
 // ── Resolve shortened Google Maps URL ────────────────────────────────────────
-// maps.app.goo.gl links are redirects — we resolve them via our own backend
-// to get the full URL, then parse the coordinates from it.
-async function resolveShortUrl(url: string): Promise<string> {
+// maps.app.goo.gl links serve an HTML page directly (no standard redirect).
+// Our backend fetches the page and extracts coordinates from the og:image meta tag.
+async function resolveShortUrl(url: string): Promise<{ lat: number; lng: number } | null> {
   const res = await fetch(
     `${import.meta.env.VITE_API_URL || 'http://localhost:5170/dashboard'}/resolve-url?url=${encodeURIComponent(url)}`,
     { credentials: 'include' },
   )
-  if (!res.ok) return url
+  if (!res.ok) return null
   const json = await res.json()
-  return json?.url ?? url
+  if (typeof json?.lat === 'number' && typeof json?.lng === 'number') {
+    return { lat: json.lat, lng: json.lng }
+  }
+  return null
 }
 type NominatimResult = {
   place_id: number
@@ -212,27 +215,32 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
     setMapsUrlError(false)
     if (!url.trim()) return
 
-    let resolvedUrl = url.trim()
+    const trimmed = url.trim()
 
-    // Detect shortened URLs (maps.app.goo.gl or goo.gl) and resolve them first
-    if (/goo\.gl|maps\.app\.goo\.gl/.test(resolvedUrl)) {
+    // Detect shortened URLs (maps.app.goo.gl or goo.gl) — resolve server-side
+    if (/goo\.gl|maps\.app\.goo\.gl/.test(trimmed)) {
       setSearching(true)
       try {
-        resolvedUrl = await resolveShortUrl(resolvedUrl)
+        const coords = await resolveShortUrl(trimmed)
+        if (coords) {
+          onChange({ lat: parseFloat(coords.lat.toFixed(6)), lng: parseFloat(coords.lng.toFixed(6)) })
+          setFlyTarget([coords.lat, coords.lng])
+        } else {
+          setMapsUrlError(true)
+        }
       } catch {
         setMapsUrlError(true)
-        setSearching(false)
-        return
       } finally {
         setSearching(false)
       }
+      return
     }
 
-    const coords = parseGoogleMapsUrl(resolvedUrl)
+    // Full Google Maps URL — parse coordinates directly from the URL
+    const coords = parseGoogleMapsUrl(trimmed)
     if (coords) {
       onChange({ lat: parseFloat(coords.lat.toFixed(6)), lng: parseFloat(coords.lng.toFixed(6)) })
       setFlyTarget([coords.lat, coords.lng])
-      setMapsUrlError(false)
     } else {
       setMapsUrlError(true)
     }
