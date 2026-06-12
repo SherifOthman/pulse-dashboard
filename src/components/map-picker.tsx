@@ -55,9 +55,15 @@ function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
 // maps.app.goo.gl links serve an HTML page directly (no standard redirect).
 // Our backend fetches the page and extracts coordinates from the og:image meta tag.
 async function resolveShortUrl(url: string): Promise<{ lat: number; lng: number } | null> {
+  const { useAuthStore } = await import('@/auth-store')
+  const token = useAuthStore.getState().accessToken
+
   const res = await fetch(
     `${import.meta.env.VITE_API_URL || 'http://localhost:5170/dashboard'}/resolve-url?url=${encodeURIComponent(url)}`,
-    { credentials: 'include' },
+    {
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    },
   )
   if (!res.ok) return null
   const json = await res.json()
