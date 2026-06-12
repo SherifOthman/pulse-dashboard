@@ -305,11 +305,11 @@ export function BranchFormModal({
                 )}
               />
 
-              <Controller
-                name="visitPrice"
-                control={control}
-                render={({ field }) => (
-                  showVisitPrice ? (
+              {showVisitPrice && (
+                <Controller
+                  name="visitPrice"
+                  control={control}
+                  render={({ field }) => (
                     <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message} isInvalid={!!errors.visitPrice}>
                       <Input
                         {...field}
@@ -319,9 +319,9 @@ export function BranchFormModal({
                         placeholder="0"
                       />
                     </Field>
-                  ) : null
-                )}
-              />
+                  )}
+                />
+              )}
 
               <PhoneNumbersField />
 
