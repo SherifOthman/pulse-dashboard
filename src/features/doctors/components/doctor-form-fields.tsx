@@ -353,19 +353,34 @@ export function DoctorFormFields() {
         />
       </div>
 
-      {/* ── Address ── */}
-      <div>
+      {/* ── Address + Visit price ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Controller
+          name="visitPrice"
+          control={control}
+          render={({ field }) => (
+            <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message} isInvalid={!!errors.visitPrice}>
+              <Input
+                {...field}
+                variant="secondary"
+                type="number"
+                min="0"
+                placeholder="0"
+              />
+            </Field>
+          )}
+        />
         <Controller
           name="address"
           control={control}
           render={({ field }) => (
-          <Field label="العنوان" error={errors.address?.message} isInvalid={!!errors.address}>
-            <Input
-              {...field}
-              variant="secondary"
-              placeholder="عنوان العيادة"
-            />
-          </Field>
+            <Field label="العنوان" error={errors.address?.message} isInvalid={!!errors.address}>
+              <Input
+                {...field}
+                variant="secondary"
+                placeholder="عنوان العيادة"
+              />
+            </Field>
           )}
         />
       </div>

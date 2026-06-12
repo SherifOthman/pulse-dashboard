@@ -53,6 +53,7 @@ export function DoctorFormPage() {
         description: existing.description || "",
         address: existing.address || "",
         gender: existing.gender?.toString() || "",
+        visitPrice: existing.visitPrice != null ? existing.visitPrice.toString() : "",
         profileImageUrl: existing.profileImageUrl || "",
         coverImageUrl: existing.coverImageUrl || "",
         latitude: existing.latitude ?? null,
@@ -78,6 +79,8 @@ export function DoctorFormPage() {
         data.gender !== "" && data.gender !== undefined
           ? parseInt(data.gender)
           : undefined,
+      visitPrice: data.visitPrice ? parseFloat(data.visitPrice) : null,
+      clearVisitPrice: !data.visitPrice,
       profileImageUrl: data.profileImageUrl || undefined,
       coverImageUrl: data.coverImageUrl || undefined,
       latitude: data.latitude ?? undefined,

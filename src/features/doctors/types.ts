@@ -94,7 +94,9 @@ export type CreateDoctorDto = {
   cityId?: string;
   description?: string;
   address?: string;
-  gender?: number; // 0=Male, 1=Female
+  gender?: number;
+  visitPrice?: number | null;
+  clearVisitPrice?: boolean;
   profileImageUrl?: string;
   coverImageUrl?: string;
   latitude?: number | null;

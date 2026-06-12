@@ -17,6 +17,7 @@ export const doctorFormSchema = z
     description: z.string().max(500, "الوصف طويل جداً").optional(),
     address: z.string().max(500, "العنوان طويل جداً").optional(),
     gender: z.string().min(1, "الجنس مطلوب"),
+    visitPrice: z.string().optional(),
     profileImageUrl: z.string().optional(),
     coverImageUrl: z.string().optional(),
     latitude: z.number().nullable().optional(),
@@ -64,6 +65,10 @@ export const doctorFormSchema = z
   .refine(
     (d) => d.longitude == null || (d.longitude >= -180 && d.longitude <= 180),
     { message: "خط الطول يجب أن يكون بين -180 و 180", path: ["longitude"] },
+  )
+  .refine(
+    (d) => !d.visitPrice || (!isNaN(Number(d.visitPrice)) && Number(d.visitPrice) > 0),
+    { message: "سعر الكشف يجب أن يكون رقماً موجباً", path: ["visitPrice"] },
   );
 
 export type DoctorFormValues = z.infer<typeof doctorFormSchema>;
@@ -76,6 +81,7 @@ export const doctorFormDefaults: DoctorFormValues = {
   description: "",
   address: "",
   gender: "",
+  visitPrice: "",
   profileImageUrl: "",
   coverImageUrl: "",
   latitude: null,
