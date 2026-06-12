@@ -9,7 +9,7 @@ import {
   Table,
   toast,
 } from '@heroui/react'
-import { Building2, Clock, Eye, Plus, Trash2 } from 'lucide-react'
+import { Building2, Clock, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { toAbsoluteUrl } from '@/services/image-url'
 import type { BranchListItem, CreateBranchDto } from '@/types/shared'
@@ -163,10 +163,10 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, useDetails
                             variant="ghost"
                             size="sm"
                             isIconOnly
-                            onPress={() => navigate(`${backRoute}/${businessId}/branches/${b.id}`)}
-                            aria-label="عرض الفرع"
+                            onPress={() => navigate(`${backRoute}/${businessId}/branches/${b.id}/edit`)}
+                            aria-label="تعديل الفرع"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="danger-soft"

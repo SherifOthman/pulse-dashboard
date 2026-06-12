@@ -9,7 +9,7 @@ import {
   Table,
   toast,
 } from '@heroui/react'
-import { Building2, Clock, Eye, Plus, Trash2 } from 'lucide-react'
+import { Building2, Clock, Pencil, Plus, Trash2 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { useDoctorDetails } from './use-doctors'
 import { useBranches, useDeleteBranch } from './use-branches'
@@ -154,10 +154,10 @@ export function BranchesPage() {
                             variant="ghost"
                             size="sm"
                             isIconOnly
-                            onPress={() => navigate(`/doctors/${doctorId}/branches/${b.id}`)}
-                            aria-label="عرض الفرع"
+                            onPress={() => navigate(`/doctors/${doctorId}/branches/${b.id}/edit`)}
+                            aria-label="تعديل الفرع"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="danger-soft"
