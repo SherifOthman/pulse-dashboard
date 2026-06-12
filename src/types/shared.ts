@@ -130,6 +130,7 @@ export type BranchDetails = {
   governorateId: string;
   city: string;
   cityId: string;
+  visitPrice: number | null;
   latitude: number | null;
   longitude: number | null;
   workingDays: WorkingDayDto[];

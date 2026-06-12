@@ -171,9 +171,7 @@ export function BranchFormModal({
           cityId: initial.cityId || "",
           address: initial.address || "",
           visitPrice:
-            (
-              initial as BranchDetails & { visitPrice?: number | null }
-            ).visitPrice?.toString() || "",
+            initial.visitPrice?.toString() || "",
           latitude: initial.latitude ?? null,
           longitude: initial.longitude ?? null,
           workingDays: mapWorkingDaysToForm(initial.workingDays),
@@ -299,6 +297,22 @@ export function BranchFormModal({
                       {...field}
                       variant="secondary"
                       placeholder="عنوان الفرع"
+                    />
+                  </Field>
+                )}
+              />
+
+              <Controller
+                name="visitPrice"
+                control={control}
+                render={({ field }) => (
+                  <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message} isInvalid={!!errors.visitPrice}>
+                    <Input
+                      {...field}
+                      variant="secondary"
+                      type="number"
+                      min="0"
+                      placeholder="0"
                     />
                   </Field>
                 )}
