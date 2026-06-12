@@ -67,7 +67,7 @@ export function LoginPage() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-4"
           >
-            <TextField>
+            <TextField variant="secondary">
               <Label className="text-foreground mb-1.5 block text-sm font-medium">
                 البريد الإلكتروني
               </Label>
@@ -80,7 +80,7 @@ export function LoginPage() {
               />
             </TextField>
 
-            <TextField>
+            <TextField variant="secondary">
               <Label className="text-foreground mb-1.5 block text-sm font-medium">
                 كلمة المرور
               </Label>

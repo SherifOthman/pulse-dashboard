@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { MapView } from '@/components/map-view'
+import { ImagePreviewModal } from '@/components/image-preview-modal'
 import { BusinessServicesField } from './business-services-field'
 import { toAbsoluteUrl } from '@/services/image-url'
 import type { BusinessDetailsDto, BranchDto, WorkingDayDto, PhoneNumberDto, TestimonialDto } from '@/types/shared'
@@ -197,6 +198,7 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
   const { data: details, isLoading, isError } = useDetails(id ?? null)
   const deleteMutation = useDelete()
   const [showDelete, setShowDelete] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   if (isLoading) return <PageSkeleton />
 
@@ -226,27 +228,37 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
           <img
             src={toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? ''}
             alt={details.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover cursor-zoom-in"
+            onClick={() => setPreviewUrl(toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? null)}
+            title="انقر للتكبير"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             {coverIcon}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
       </div>
 
       {/* ── Profile header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
-          <Avatar size="lg" className="border-2 border-surface shadow-sm">
-            {details.profileImageUrl ? (
-              <Avatar.Image src={toAbsoluteUrl(details.profileImageUrl) ?? details.profileImageUrl} alt={details.name} />
-            ) : null}
-            <Avatar.Fallback>
-              <div className="h-full w-full flex items-center justify-center text-muted">{coverIcon}</div>
-            </Avatar.Fallback>
-          </Avatar>
+          <button
+            type="button"
+            className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            onClick={() => details.profileImageUrl && setPreviewUrl(toAbsoluteUrl(details.profileImageUrl) ?? null)}
+            aria-label="عرض الصورة الشخصية"
+            title="انقر للتكبير"
+          >
+            <Avatar size="lg" className="border-2 border-surface shadow-sm">
+              {details.profileImageUrl ? (
+                <Avatar.Image src={toAbsoluteUrl(details.profileImageUrl) ?? details.profileImageUrl} alt={details.name} />
+              ) : null}
+              <Avatar.Fallback>
+                <div className="h-full w-full flex items-center justify-center text-muted">{coverIcon}</div>
+              </Avatar.Fallback>
+            </Avatar>
+          </button>
           <div>
             <h1 className="text-xl font-bold text-foreground leading-tight">{details.name}</h1>
             <Chip size="sm" variant="soft" color={details.averageRating > 0 ? 'warning' : 'default'} className="mt-1.5">
@@ -457,6 +469,14 @@ export function BusinessDetailsPage({ useDetails, useDelete, singularLabel, back
           )}
         </Tabs.Panel>
       </Tabs>
+
+      {/* ── Image preview ── */}
+      <ImagePreviewModal
+        src={previewUrl}
+        alt={details.name}
+        isOpen={!!previewUrl}
+        onClose={() => setPreviewUrl(null)}
+      />
 
       {/* ── Delete confirmation ── */}
       <ConfirmModal

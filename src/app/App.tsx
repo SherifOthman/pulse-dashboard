@@ -29,6 +29,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const hydrated = useHydrated()
 
+  // Wait for zustand to rehydrate from localStorage before making routing decisions.
   if (!hydrated) return null
 
   if (!isAuthenticated) return <Navigate to="/login" replace />

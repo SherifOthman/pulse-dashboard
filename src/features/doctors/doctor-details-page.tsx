@@ -29,6 +29,7 @@ import {
 import { useDoctorDetails, useDeleteDoctor } from './use-doctors'
 import { ConfirmModal } from '@/components/confirm-modal'
 import { MapView } from '@/components/map-view'
+import { ImagePreviewModal } from '@/components/image-preview-modal'
 import { toAbsoluteUrl } from '@/services/image-url'
 import type { WorkingDayDto, PhoneNumberDto, BranchDto, TestimonialDto } from './types'
 
@@ -196,6 +197,7 @@ export function DoctorDetailsPage() {
   const { data: details, isLoading, isError } = useDoctorDetails(id ?? null)
   const deleteMutation = useDeleteDoctor()
   const [showDelete, setShowDelete] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   if (isLoading) return <PageSkeleton />
 
@@ -225,28 +227,38 @@ export function DoctorDetailsPage() {
           <img
             src={toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? ''}
             alt={details.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover cursor-zoom-in"
+            onClick={() => setPreviewUrl(toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? null)}
+            title="انقر للتكبير"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <Stethoscope className="h-16 w-16 text-muted/20" />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
       </div>
 
       {/* ── Profile header ── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
           <Badge.Anchor>
-            <Avatar size="lg" className="border-2 border-surface shadow-sm">
-              {details.profileImageUrl ? (
-                <Avatar.Image src={toAbsoluteUrl(details.profileImageUrl) ?? details.profileImageUrl} alt={details.name} />
-              ) : null}
-              <Avatar.Fallback>
-                <UserRound className="h-7 w-7" />
-              </Avatar.Fallback>
-            </Avatar>
+            <button
+              type="button"
+              className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              onClick={() => details.profileImageUrl && setPreviewUrl(toAbsoluteUrl(details.profileImageUrl) ?? null)}
+              aria-label="عرض الصورة الشخصية"
+              title="انقر للتكبير"
+            >
+              <Avatar size="lg" className="border-2 border-surface shadow-sm">
+                {details.profileImageUrl ? (
+                  <Avatar.Image src={toAbsoluteUrl(details.profileImageUrl) ?? details.profileImageUrl} alt={details.name} />
+                ) : null}
+                <Avatar.Fallback>
+                  <UserRound className="h-7 w-7" />
+                </Avatar.Fallback>
+              </Avatar>
+            </button>
             {/* Online-style dot for gender */}
             <Badge
               color={details.gender === 0 ? 'accent' : 'danger'}
@@ -467,6 +479,14 @@ export function DoctorDetailsPage() {
           )}
         </Tabs.Panel>
       </Tabs>
+
+      {/* ── Image preview ── */}
+      <ImagePreviewModal
+        src={previewUrl}
+        alt={details.name}
+        isOpen={!!previewUrl}
+        onClose={() => setPreviewUrl(null)}
+      />
 
       {/* ── Delete confirmation ── */}
       <ConfirmModal
