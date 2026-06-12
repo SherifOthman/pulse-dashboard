@@ -5,6 +5,8 @@
  *  1. Clicking anywhere on the map
  *  2. Dragging the marker
  *  3. Searching by place name (Nominatim / OpenStreetMap geocoding — no API key)
+ *  4. Pasting a Google Maps URL (full or short)
+ *  5. Pasting raw coordinates: "29.9745151, 31.2808435"
  *
  * Uses Leaflet + React-Leaflet with free OpenStreetMap tiles.
  * Fixes Leaflet's default marker icon issue with Vite bundling.
@@ -16,8 +18,6 @@ import { Button, Input, Spinner } from '@heroui/react'
 import { MapPin, Search, X, LocateFixed } from 'lucide-react'
 
 // ── Fix Leaflet default marker icons with Vite ────────────────────────────────
-// Leaflet tries to resolve icon URLs relative to the CSS file, which breaks
-// when bundled. We override the default icon with inline SVG data URIs.
 const defaultIcon = L.divIcon({
   className: '',
   html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="28" height="42">
@@ -30,30 +30,32 @@ const defaultIcon = L.divIcon({
   popupAnchor: [0, -42],
 })
 
+// ── Parse raw coordinates ─────────────────────────────────────────────────────
+// Handles: "29.9745151, 31.2808435" or "29.9745151,31.2808435"
+function parseRawCoords(text: string): { lat: number; lng: number } | null {
+  const m = text.trim().match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/)
+  if (!m) return null
+  const lat = parseFloat(m[1])
+  const lng = parseFloat(m[2])
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null
+  return { lat, lng }
+}
+
 // ── Parse Google Maps URL ─────────────────────────────────────────────────────
-// Handles formats:
-//   !3d29.97!4d31.28       (data parameter — most precise, actual pin location)
-//   /@lat,lng,zoom         (viewport center — fallback)
-//   ?q=lat,lng             (short link)
 function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
-  // Most precise: !3d29.9745151!4d31.2808435 (actual pinned place coordinates)
   const dMatch = url.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/)
   if (dMatch) return { lat: parseFloat(dMatch[1]), lng: parseFloat(dMatch[2]) }
 
-  // Fallback: /@29.9745151,31.2808435,17z (map viewport center)
   const atMatch = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/)
   if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) }
 
-  // ?q=lat,lng or ?q=lat%2Clng (short share links)
   const qMatch = url.match(/[?&]q=(-?\d+\.?\d*)[,%2C]+(-?\d+\.?\d*)/)
   if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) }
 
   return null
 }
 
-// ── Resolve shortened Google Maps URL ────────────────────────────────────────
-// maps.app.goo.gl links serve an HTML page directly (no standard redirect).
-// Our backend fetches the page and extracts coordinates from the og:image meta tag.
+// ── Resolve shortened Google Maps URL via backend ─────────────────────────────
 async function resolveShortUrl(url: string): Promise<{ lat: number; lng: number } | null> {
   const { useAuthStore } = await import('@/auth-store')
   const token = useAuthStore.getState().accessToken
