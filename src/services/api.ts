@@ -32,10 +32,11 @@ api.interceptors.response.use(
     // call is made. The finally{} sets refreshPromise=null but each caller
     // already holds its own reference to the in-flight promise.
     if (!refreshPromise) {
+      const storedRefreshToken = useAuthStore.getState().refreshToken;
       refreshPromise = axios
         .post(
           `${api.defaults.baseURL}/auth/refresh`,
-          {},
+          { refreshToken: storedRefreshToken },
           { withCredentials: true },
         )
         .then(({ data }) => {
