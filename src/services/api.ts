@@ -21,44 +21,50 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      if (!refreshPromise) {
-        refreshPromise = (async () => {
-          try {
-            // The backend reads the refresh token from the HttpOnly cookie
-            // (sent automatically because withCredentials: true is set).
-            const { data } = await axios.post(
-              `${api.defaults.baseURL}/auth/refresh`,
-              {},
-              { withCredentials: true },
-            );
-            useAuthStore.getState().setSession({
-              accessToken: data.accessToken,
-              refreshToken: data.refreshToken,
-            });
-          } catch (e) {
-            useAuthStore.getState().clearSession();
-            throw e;
-          } finally {
-            refreshPromise = null;
-          }
-        })();
-      }
-
-      // Attach both a success and failure handler so queued requests
-      // don't hang if the refresh itself fails.
-      return refreshPromise.then(
-        () => {
-          originalRequest.headers.Authorization = `Bearer ${useAuthStore.getState().accessToken}`;
-          return api(originalRequest);
-        },
-        () => Promise.reject(error),
-      );
+    if (error.response?.status !== 401 || originalRequest._retry) {
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    originalRequest._retry = true;
+
+    // Capture the current promise reference immediately.
+    // Multiple concurrent 401s share the same promise — only one refresh
+    // call is made. The finally{} sets refreshPromise=null but each caller
+    // already holds its own reference to the in-flight promise.
+    if (!refreshPromise) {
+      refreshPromise = axios
+        .post(
+          `${api.defaults.baseURL}/auth/refresh`,
+          {},
+          { withCredentials: true },
+        )
+        .then(({ data }) => {
+          useAuthStore.getState().setSession({
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          });
+        })
+        .catch((e) => {
+          useAuthStore.getState().clearSession();
+          throw e;
+        })
+        .finally(() => {
+          refreshPromise = null;
+        });
+    }
+
+    // Each concurrent request captures the same promise reference here,
+    // so even if finally{} has already nulled the module-level variable,
+    // this local reference is still valid.
+    const pending = refreshPromise;
+
+    return pending.then(
+      () => {
+        originalRequest.headers.Authorization = `Bearer ${useAuthStore.getState().accessToken}`;
+        return api(originalRequest);
+      },
+      () => Promise.reject(error),
+    );
   },
 );
 
