@@ -82,16 +82,16 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
               {wd.enabled && (
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <TimeField
-                    value={toTime(wd.endTime)}
+                    value={toTime(wd.startTime)}
                     onChange={(t: Time | null) => {
                       if (t) {
                         const s = fromTime(t)
-                        setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
-                        lastTime.current.endTime = s
+                        setValue(`${name}.${i}.startTime`, s, { shouldDirty: true })
+                        lastTime.current.startTime = s
                       }
                     }}
                     className="flex-1"
-                    aria-label={`${DAY_NAMES[i]} وقت النهاية`}
+                    aria-label={`${DAY_NAMES[i]} وقت البداية`}
                   >
                     <TimeField.Group variant="secondary" className="w-full">
                       <TimeField.Input>
@@ -103,16 +103,16 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                   <span className="text-muted shrink-0 text-sm">–</span>
 
                   <TimeField
-                    value={toTime(wd.startTime)}
+                    value={toTime(wd.endTime)}
                     onChange={(t: Time | null) => {
                       if (t) {
                         const s = fromTime(t)
-                        setValue(`${name}.${i}.startTime`, s, { shouldDirty: true })
-                        lastTime.current.startTime = s
+                        setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
+                        lastTime.current.endTime = s
                       }
                     }}
                     className="flex-1"
-                    aria-label={`${DAY_NAMES[i]} وقت البداية`}
+                    aria-label={`${DAY_NAMES[i]} وقت النهاية`}
                   >
                     <TimeField.Group variant="secondary" className="w-full">
                       <TimeField.Input>
