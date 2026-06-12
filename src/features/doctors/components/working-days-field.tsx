@@ -80,7 +80,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
 
               {/* Time pickers — only visible when day is enabled */}
               {wd.enabled && (
-                <div className="flex items-center gap-2 flex-1 min-w-0" dir="ltr">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
                   <TimeField
                     value={toTime(wd.endTime)}
                     onChange={(t: Time | null) => {
@@ -90,10 +90,10 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                         lastTime.current.endTime = s
                       }
                     }}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                     aria-label={`${DAY_NAMES[i]} وقت النهاية`}
                   >
-                    <TimeField.Group variant="secondary" className="w-full">
+                    <TimeField.Group variant="secondary" className="w-full" dir="ltr">
                       <TimeField.Input>
                         {(segment) => <TimeField.Segment segment={segment} />}
                       </TimeField.Input>
@@ -111,10 +111,10 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
                         lastTime.current.startTime = s
                       }
                     }}
-                    className="flex-1"
+                    className="flex-1 min-w-0"
                     aria-label={`${DAY_NAMES[i]} وقت البداية`}
                   >
-                    <TimeField.Group variant="secondary" className="w-full">
+                    <TimeField.Group variant="secondary" className="w-full" dir="ltr">
                       <TimeField.Input>
                         {(segment) => <TimeField.Segment segment={segment} />}
                       </TimeField.Input>
