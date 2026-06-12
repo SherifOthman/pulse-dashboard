@@ -32,21 +32,21 @@ const defaultIcon = L.divIcon({
 
 // ── Parse Google Maps URL ─────────────────────────────────────────────────────
 // Handles formats:
-//   /@lat,lng,zoom        (standard place URL)
-//   ?q=lat,lng            (short link)
-//   /place/.../lat,lng    (some share links)
+//   !3d29.97!4d31.28       (data parameter — most precise, actual pin location)
+//   /@lat,lng,zoom         (viewport center — fallback)
+//   ?q=lat,lng             (short link)
 function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
-  // Most common: /@29.9745151,31.2808435,17z
+  // Most precise: !3d29.9745151!4d31.2808435 (actual pinned place coordinates)
+  const dMatch = url.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/)
+  if (dMatch) return { lat: parseFloat(dMatch[1]), lng: parseFloat(dMatch[2]) }
+
+  // Fallback: /@29.9745151,31.2808435,17z (map viewport center)
   const atMatch = url.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/)
   if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) }
 
-  // ?q=lat,lng or ?q=lat%2Clng
+  // ?q=lat,lng or ?q=lat%2Clng (short share links)
   const qMatch = url.match(/[?&]q=(-?\d+\.?\d*)[,%2C]+(-?\d+\.?\d*)/)
   if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) }
-
-  // !3d29.97!4d31.28 (data parameter format)
-  const dMatch = url.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/)
-  if (dMatch) return { lat: parseFloat(dMatch[1]), lng: parseFloat(dMatch[2]) }
 
   return null
 }
