@@ -50,6 +50,18 @@ function parseGoogleMapsUrl(url: string): { lat: number; lng: number } | null {
 
   return null
 }
+
+// ── Resolve shortened Google Maps URL ────────────────────────────────────────
+// maps.app.goo.gl links are redirects — we resolve them via a CORS proxy to
+// get the full URL, then parse the coordinates from it.
+async function resolveShortUrl(url: string): Promise<string> {
+  // allorigins returns { contents, status { url } } — status.url is the final URL after redirects
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
+  const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) })
+  const json = await res.json()
+  // allorigins returns the final URL in status.url
+  return json?.status?.url ?? url
+}
 type NominatimResult = {
   place_id: number
   display_name: string
@@ -194,11 +206,28 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
     setSearchResults([])
   }
 
-  const handleMapsUrl = (url: string) => {
+  const handleMapsUrl = async (url: string) => {
     setMapsUrl(url)
     setMapsUrlError(false)
     if (!url.trim()) return
-    const coords = parseGoogleMapsUrl(url)
+
+    let resolvedUrl = url.trim()
+
+    // Detect shortened URLs (maps.app.goo.gl or goo.gl) and resolve them first
+    if (/goo\.gl|maps\.app\.goo\.gl/.test(resolvedUrl)) {
+      setSearching(true)
+      try {
+        resolvedUrl = await resolveShortUrl(resolvedUrl)
+      } catch {
+        setMapsUrlError(true)
+        setSearching(false)
+        return
+      } finally {
+        setSearching(false)
+      }
+    }
+
+    const coords = parseGoogleMapsUrl(resolvedUrl)
     if (coords) {
       onChange({ lat: parseFloat(coords.lat.toFixed(6)), lng: parseFloat(coords.lng.toFixed(6)) })
       setFlyTarget([coords.lat, coords.lng])
@@ -215,7 +244,7 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
         <div className="relative flex-1">
           <Input
             value={mapsUrl}
-            onChange={(e) => handleMapsUrl(e.target.value)}
+            onChange={(e) => { void handleMapsUrl(e.target.value) }}
             variant="secondary"
             placeholder="الصق رابط Google Maps هنا..."
             dir="ltr"
