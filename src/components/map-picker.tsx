@@ -261,7 +261,7 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
             value={mapsUrl}
             onChange={(e) => { void handleMapsUrl(e.target.value) }}
             variant="secondary"
-            placeholder="الصق رابط Google Maps الكامل (ليس الرابط المختصر goo.gl)..."
+            placeholder="الصق رابط Google Maps هنا (كامل أو مختصر)..."
             dir="ltr"
             className="w-full"
             aria-label="رابط Google Maps"
@@ -279,23 +279,9 @@ export function MapPicker({ value, onChange, height = 320 }: Props) {
         </div>
       </div>
       {mapsUrlError && (
-        <div className="flex items-center justify-between rounded-lg bg-danger/10 px-3 py-2">
-          <p className="text-xs text-danger">
-            {/goo\.gl/.test(mapsUrl)
-              ? 'الروابط المختصرة لا تحتوي على إحداثيات — افتح الرابط في المتصفح وانسخ الرابط الكامل من شريط العنوان'
-              : 'تعذّر استخراج الإحداثيات — تأكد من أن الرابط من Google Maps'}
-          </p>
-          {/goo\.gl/.test(mapsUrl) && (
-            <a
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-primary underline shrink-0 mr-2"
-            >
-              افتح الرابط
-            </a>
-          )}
-        </div>
+        <p className="text-xs text-danger px-1">
+          تعذّر استخراج الإحداثيات — تأكد من أن الرابط من Google Maps
+        </p>
       )}
 
       {/* ── Search bar ── */}
