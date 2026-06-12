@@ -223,12 +223,12 @@ export function DoctorDetailsPage() {
 
       {/* ── Cover image ── */}
       <div className="relative h-52 w-full overflow-hidden rounded-2xl bg-surface-secondary mb-6">
-        {details.coverImageUrl || details.profileImageUrl ? (
+        {details.coverImageUrl ? (
           <img
-            src={toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? ''}
+            src={toAbsoluteUrl(details.coverImageUrl) ?? ''}
             alt={details.name}
             className="h-full w-full object-cover cursor-zoom-in"
-            onClick={() => setPreviewUrl(toAbsoluteUrl(details.coverImageUrl ?? details.profileImageUrl!) ?? null)}
+            onClick={() => setPreviewUrl(toAbsoluteUrl(details.coverImageUrl!) ?? null)}
             title="انقر للتكبير"
           />
         ) : (
