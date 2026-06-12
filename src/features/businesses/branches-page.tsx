@@ -28,9 +28,11 @@ type Props = {
     getBranchDetails: (businessId: string, id: string) => Promise<BranchDetails>
   }
   useDetails: (id: string | null) => { data?: { name: string }; isLoading: boolean }
+  /** Show the visit price field in the branch form — only for doctors */
+  showVisitPrice?: boolean
 }
 
-export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi, useDetails }: Props) {
+export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi, useDetails, showVisitPrice = false }: Props) {
   const { id: businessId } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -203,6 +205,7 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
         onClose={() => setFormOpen(false)}
         onSubmit={handleCreate}
         isLoading={createMut.isPending}
+        showVisitPrice={showVisitPrice}
       />
 
       <BranchFormModal
@@ -211,6 +214,7 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
         onSubmit={handleUpdate}
         isLoading={updateMut.isPending}
         initial={editInitial}
+        showVisitPrice={showVisitPrice}
       />
 
       <ConfirmModal

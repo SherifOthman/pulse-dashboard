@@ -124,6 +124,8 @@ type Props = {
   onSubmit: (dto: CreateBranchDto) => void;
   isLoading?: boolean;
   initial?: BranchDetails | null;
+  /** Show the visit price field — only relevant for doctor branches */
+  showVisitPrice?: boolean;
 };
 
 export function BranchFormModal({
@@ -132,6 +134,7 @@ export function BranchFormModal({
   onSubmit,
   isLoading,
   initial,
+  showVisitPrice = false,
 }: Props) {
   const methods = useForm<BranchFormValues>({
     resolver: zodResolver(branchFormSchema),
@@ -306,15 +309,17 @@ export function BranchFormModal({
                 name="visitPrice"
                 control={control}
                 render={({ field }) => (
-                  <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message} isInvalid={!!errors.visitPrice}>
-                    <Input
-                      {...field}
-                      variant="secondary"
-                      type="number"
-                      min="0"
-                      placeholder="0"
-                    />
-                  </Field>
+                  showVisitPrice ? (
+                    <Field label="سعر الكشف (ج.م)" error={errors.visitPrice?.message} isInvalid={!!errors.visitPrice}>
+                      <Input
+                        {...field}
+                        variant="secondary"
+                        type="number"
+                        min="0"
+                        placeholder="0"
+                      />
+                    </Field>
+                  ) : null
                 )}
               />
 
