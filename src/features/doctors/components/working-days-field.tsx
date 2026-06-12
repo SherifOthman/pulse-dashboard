@@ -7,6 +7,7 @@
 import { useRef } from 'react'
 import { Controller, useFormContext } from 'react-hook-form'
 import { Checkbox, TimeField } from '@heroui/react'
+import { I18nProvider } from '@react-aria/i18n'
 import { Time } from '@internationalized/date'
 
 export type WorkingDayEntry = {
@@ -80,49 +81,49 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
 
               {/* Time pickers — only visible when day is enabled */}
               {wd.enabled && (
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <TimeField
-                    locale="en-US"
-                    value={toTime(wd.startTime)}
-                    onChange={(t: Time | null) => {
-                      if (t) {
-                        const s = fromTime(t)
-                        setValue(`${name}.${i}.startTime`, s, { shouldDirty: true })
-                        lastTime.current.startTime = s
-                      }
-                    }}
-                    className="flex-1 min-w-0"
-                    aria-label={`${DAY_NAMES[i]} وقت البداية`}
-                  >
-                    <TimeField.Group variant="secondary" className="w-full">
-                      <TimeField.Input>
-                        {(segment) => <TimeField.Segment segment={segment} />}
-                      </TimeField.Input>
-                    </TimeField.Group>
-                  </TimeField>
+                <I18nProvider locale="en-US">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <TimeField
+                      value={toTime(wd.startTime)}
+                      onChange={(t: Time | null) => {
+                        if (t) {
+                          const s = fromTime(t)
+                          setValue(`${name}.${i}.startTime`, s, { shouldDirty: true })
+                          lastTime.current.startTime = s
+                        }
+                      }}
+                      className="flex-1 min-w-0"
+                      aria-label={`${DAY_NAMES[i]} وقت البداية`}
+                    >
+                      <TimeField.Group variant="secondary" className="w-full">
+                        <TimeField.Input>
+                          {(segment) => <TimeField.Segment segment={segment} />}
+                        </TimeField.Input>
+                      </TimeField.Group>
+                    </TimeField>
 
-                  <span className="text-muted shrink-0 text-sm">–</span>
+                    <span className="text-muted shrink-0 text-sm">–</span>
 
-                  <TimeField
-                    locale="en-US"
-                    value={toTime(wd.endTime)}
-                    onChange={(t: Time | null) => {
-                      if (t) {
-                        const s = fromTime(t)
-                        setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
-                        lastTime.current.endTime = s
-                      }
-                    }}
-                    className="flex-1 min-w-0"
-                    aria-label={`${DAY_NAMES[i]} وقت النهاية`}
-                  >
-                    <TimeField.Group variant="secondary" className="w-full">
-                      <TimeField.Input>
-                        {(segment) => <TimeField.Segment segment={segment} />}
-                      </TimeField.Input>
-                    </TimeField.Group>
-                  </TimeField>
-                </div>
+                    <TimeField
+                      value={toTime(wd.endTime)}
+                      onChange={(t: Time | null) => {
+                        if (t) {
+                          const s = fromTime(t)
+                          setValue(`${name}.${i}.endTime`, s, { shouldDirty: true })
+                          lastTime.current.endTime = s
+                        }
+                      }}
+                      className="flex-1 min-w-0"
+                      aria-label={`${DAY_NAMES[i]} وقت النهاية`}
+                    >
+                      <TimeField.Group variant="secondary" className="w-full">
+                        <TimeField.Input>
+                          {(segment) => <TimeField.Segment segment={segment} />}
+                        </TimeField.Input>
+                      </TimeField.Group>
+                    </TimeField>
+                  </div>
+                </I18nProvider>
               )}
             </div>
           </div>
