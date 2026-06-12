@@ -48,11 +48,6 @@ export type DoctorListItem = {
   specialization: string;
   governorate: string;
   averageRating: number;
-  totalRatings: number;
-  nextWorkingDay: number;
-  startTime: string | null;
-  endTime: string | null;
-  isOpen: boolean;
   gender: number; // 0=Male, 1=Female
   createdBy: string | null;
   visitPrice: number | null;
