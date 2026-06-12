@@ -9,11 +9,10 @@ import {
   Table,
   toast,
 } from '@heroui/react'
-import { Building2, Clock, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Building2, Clock, Eye, Plus, Trash2 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
-import { BranchFormModal } from './branch-form-modal'
 import { toAbsoluteUrl } from '@/services/image-url'
-import type { BranchDetails, BranchListItem, CreateBranchDto } from '@/types/shared'
+import type { BranchListItem, CreateBranchDto } from '@/types/shared'
 
 type Props = {
   singularLabel: string
@@ -25,49 +24,21 @@ type Props = {
     useDeleteBranch: (id: string) => { mutate: (branchId: string, opts?: { onSuccess?: () => void; onError?: () => void }) => void; isPending: boolean }
   }
   branchApi: {
-    getBranchDetails: (businessId: string, id: string) => Promise<BranchDetails>
+    getBranchDetails: (businessId: string, id: string) => Promise<any>
   }
   useDetails: (id: string | null) => { data?: { name: string }; isLoading: boolean }
-  /** Show the visit price field in the branch form — only for doctors */
   showVisitPrice?: boolean
 }
 
-export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi, useDetails, showVisitPrice = false }: Props) {
+export function BranchesPage({ singularLabel, backRoute, branchHooks, useDetails }: Props) {
   const { id: businessId } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [formOpen, setFormOpen] = useState(false)
-  const [editInitial, setEditInitial] = useState<BranchDetails | null>(null)
   const [deleting, setDeleting] = useState<BranchListItem | null>(null)
 
   const { data: parent } = useDetails(businessId ?? null)
   const { data: branches = [], isLoading } = branchHooks.useBranches(businessId)
-  const createMut = branchHooks.useCreateBranch(businessId!)
-  const updateMut = branchHooks.useUpdateBranch(businessId!, editInitial?.id ?? '')
   const deleteMut = branchHooks.useDeleteBranch(businessId!)
-
-  const handleEdit = async (b: BranchListItem) => {
-    try {
-      const details = await branchApi.getBranchDetails(businessId!, b.id)
-      setEditInitial(details)
-    } catch {
-      toast.danger('فشل تحميل بيانات الفرع')
-    }
-  }
-
-  const handleCreate = (dto: CreateBranchDto) => {
-    createMut.mutate(dto, {
-      onSuccess: () => { setFormOpen(false); toast.success('تمت إضافة الفرع بنجاح') },
-      onError: () => toast.danger('حدث خطأ أثناء الإضافة'),
-    })
-  }
-
-  const handleUpdate = (dto: CreateBranchDto) => {
-    updateMut.mutate(dto, {
-      onSuccess: () => { setEditInitial(null); toast.success('تم الحفظ بنجاح') },
-      onError: () => toast.danger('حدث خطأ أثناء الحفظ'),
-    })
-  }
 
   const handleDelete = () => {
     if (!deleting) return
@@ -79,6 +50,7 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
 
   return (
     <div dir="rtl">
+      {/* ── Breadcrumbs ── */}
       <Breadcrumbs className="mb-4" onAction={(key) => navigate(String(key))}>
         <Breadcrumbs.Item id={backRoute}>{singularLabel}</Breadcrumbs.Item>
         {parent && (
@@ -87,6 +59,7 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
         <Breadcrumbs.Item>الفروع</Breadcrumbs.Item>
       </Breadcrumbs>
 
+      {/* ── Page header ── */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-foreground">
@@ -96,12 +69,17 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
             <p className="text-sm text-muted mt-0.5">{branches.length} فرع مسجل</p>
           )}
         </div>
-        <Button variant="primary" size="sm" onPress={() => setFormOpen(true)}>
+        <Button
+          variant="primary"
+          size="sm"
+          onPress={() => navigate(`${backRoute}/${businessId}/branches/new`)}
+        >
           <Plus className="h-4 w-4" />
           إضافة فرع
         </Button>
       </div>
 
+      {/* ── Table ── */}
       <Table variant="primary">
         <Table.ScrollContainer>
           <Table.Content aria-label="قائمة الفروع">
@@ -145,7 +123,12 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
                     </Table.Row>
                   ))
                 : branches.map((b) => (
-                    <Table.Row key={b.id}>
+                    <Table.Row
+                      key={b.id}
+                      className="cursor-pointer hover:bg-surface-secondary transition-colors"
+                      onPress={() => navigate(`${backRoute}/${businessId}/branches/${b.id}`)}
+                    >
+                      {/* Branch name + avatar */}
                       <Table.Cell>
                         <div className="flex items-center gap-3">
                           <Avatar size="sm" className="rounded-lg">
@@ -160,10 +143,12 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
                         </div>
                       </Table.Cell>
 
+                      {/* Location */}
                       <Table.Cell className="hidden md:table-cell text-sm text-muted">
                         {[b.city, b.governorate].filter(Boolean).join(' - ') || '—'}
                       </Table.Cell>
 
+                      {/* Open / closed */}
                       <Table.Cell className="hidden lg:table-cell">
                         <Chip size="sm" variant="soft" color={b.isOpen ? 'success' : 'default'}>
                           <Clock className="h-3 w-3" />
@@ -171,16 +156,17 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
                         </Chip>
                       </Table.Cell>
 
+                      {/* Actions */}
                       <Table.Cell>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
                             isIconOnly
-                            onPress={() => handleEdit(b)}
-                            aria-label="تعديل الفرع"
+                            onPress={() => navigate(`${backRoute}/${businessId}/branches/${b.id}`)}
+                            aria-label="عرض الفرع"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="danger-soft"
@@ -200,23 +186,7 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, branchApi,
         </Table.ScrollContainer>
       </Table>
 
-      <BranchFormModal
-        isOpen={formOpen}
-        onClose={() => setFormOpen(false)}
-        onSubmit={handleCreate}
-        isLoading={createMut.isPending}
-        showVisitPrice={showVisitPrice}
-      />
-
-      <BranchFormModal
-        isOpen={!!editInitial}
-        onClose={() => setEditInitial(null)}
-        onSubmit={handleUpdate}
-        isLoading={updateMut.isPending}
-        initial={editInitial}
-        showVisitPrice={showVisitPrice}
-      />
-
+      {/* ── Delete confirmation ── */}
       <ConfirmModal
         isOpen={!!deleting}
         onClose={() => setDeleting(null)}

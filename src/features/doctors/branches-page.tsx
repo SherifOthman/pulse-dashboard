@@ -9,63 +9,28 @@ import {
   Table,
   toast,
 } from '@heroui/react'
-import { Building2, Clock, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Building2, Clock, Eye, Plus, Trash2 } from 'lucide-react'
 import { ConfirmModal } from '@/components/confirm-modal'
-import { BranchFormModal } from './branch-form-modal'
 import { useDoctorDetails } from './use-doctors'
-import {
-  useBranches,
-  useCreateBranch,
-  useUpdateBranch,
-  useDeleteBranch,
-} from './use-branches'
-import { getBranchDetails } from './branches-api'
+import { useBranches, useDeleteBranch } from './use-branches'
 import { toAbsoluteUrl } from '@/services/image-url'
-import type { BranchListItem, BranchDetails, CreateBranchDto } from './types'
+import type { BranchListItem } from './types'
 
 export function BranchesPage() {
   const { id: doctorId } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [formOpen, setFormOpen]       = useState(false)
-  const [editInitial, setEditInitial] = useState<BranchDetails | null>(null)
-  const [deleting, setDeleting]       = useState<BranchListItem | null>(null)
+  const [deleting, setDeleting] = useState<BranchListItem | null>(null)
 
-  const { data: doctor }                          = useDoctorDetails(doctorId ?? null)
-  const { data: branches = [], isLoading }        = useBranches(doctorId)
-  const createMut                                  = useCreateBranch(doctorId!)
-  const updateMut                                  = useUpdateBranch(doctorId!, editInitial?.id ?? '')
-  const deleteMut                                  = useDeleteBranch(doctorId!)
-
-  // Load full branch details before opening edit modal
-  const handleEdit = async (b: BranchListItem) => {
-    try {
-      const details = await getBranchDetails(doctorId!, b.id)
-      setEditInitial(details)
-    } catch {
-      toast.danger('فشل تحميل بيانات الفرع')
-    }
-  }
-
-  const handleCreate = (dto: CreateBranchDto) => {
-    createMut.mutate(dto, {
-      onSuccess: () => { setFormOpen(false); toast.success('تمت إضافة الفرع بنجاح') },
-      onError:   () => toast.danger('حدث خطأ أثناء الإضافة'),
-    })
-  }
-
-  const handleUpdate = (dto: CreateBranchDto) => {
-    updateMut.mutate(dto, {
-      onSuccess: () => { setEditInitial(null); toast.success('تم الحفظ بنجاح') },
-      onError:   () => toast.danger('حدث خطأ أثناء الحفظ'),
-    })
-  }
+  const { data: doctor } = useDoctorDetails(doctorId ?? null)
+  const { data: branches = [], isLoading } = useBranches(doctorId)
+  const deleteMut = useDeleteBranch(doctorId!)
 
   const handleDelete = () => {
     if (!deleting) return
     deleteMut.mutate(deleting.id, {
       onSuccess: () => { setDeleting(null); toast.success('تم حذف الفرع بنجاح') },
-      onError:   () => toast.danger('حدث خطأ أثناء الحذف'),
+      onError: () => toast.danger('حدث خطأ أثناء الحذف'),
     })
   }
 
@@ -90,7 +55,11 @@ export function BranchesPage() {
             <p className="text-sm text-muted mt-0.5">{branches.length} فرع مسجل</p>
           )}
         </div>
-        <Button variant="primary" size="sm" onPress={() => setFormOpen(true)}>
+        <Button
+          variant="primary"
+          size="sm"
+          onPress={() => navigate(`/doctors/${doctorId}/branches/new`)}
+        >
           <Plus className="h-4 w-4" />
           إضافة فرع
         </Button>
@@ -129,23 +98,19 @@ export function BranchesPage() {
                           <Skeleton className="h-4 w-32 rounded" />
                         </div>
                       </Table.Cell>
-                      <Table.Cell className="hidden md:table-cell">
-                        <Skeleton className="h-4 w-28 rounded" />
-                      </Table.Cell>
-                      <Table.Cell className="hidden md:table-cell">
-                        <Skeleton className="h-4 w-16 rounded" />
-                      </Table.Cell>
-                      <Table.Cell className="hidden lg:table-cell">
-                        <Skeleton className="h-5 w-16 rounded-full" />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Skeleton className="h-8 w-20 rounded" />
-                      </Table.Cell>
+                      <Table.Cell className="hidden md:table-cell"><Skeleton className="h-4 w-28 rounded" /></Table.Cell>
+                      <Table.Cell className="hidden md:table-cell"><Skeleton className="h-4 w-16 rounded" /></Table.Cell>
+                      <Table.Cell className="hidden lg:table-cell"><Skeleton className="h-5 w-16 rounded-full" /></Table.Cell>
+                      <Table.Cell><Skeleton className="h-8 w-20 rounded" /></Table.Cell>
                     </Table.Row>
                   ))
                 : branches.map((b) => (
-                    <Table.Row key={b.id}>
-                      {/* Branch name + avatar */}
+                    <Table.Row
+                      key={b.id}
+                      className="cursor-pointer hover:bg-surface-secondary transition-colors"
+                      onPress={() => navigate(`/doctors/${doctorId}/branches/${b.id}`)}
+                    >
+                      {/* Name + avatar */}
                       <Table.Cell>
                         <div className="flex items-center gap-3">
                           <Avatar size="sm" className="rounded-lg">
@@ -168,9 +133,7 @@ export function BranchesPage() {
                       {/* Visit price */}
                       <Table.Cell className="hidden md:table-cell">
                         {b.visitPrice != null ? (
-                          <span className="text-sm font-medium text-success">
-                            {b.visitPrice} ج.م
-                          </span>
+                          <span className="text-sm font-medium text-success">{b.visitPrice} ج.م</span>
                         ) : (
                           <span className="text-muted text-sm">—</span>
                         )}
@@ -186,15 +149,15 @@ export function BranchesPage() {
 
                       {/* Actions */}
                       <Table.Cell>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
                             isIconOnly
-                            onPress={() => handleEdit(b)}
-                            aria-label="تعديل الفرع"
+                            onPress={() => navigate(`/doctors/${doctorId}/branches/${b.id}`)}
+                            aria-label="عرض الفرع"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="danger-soft"
@@ -213,23 +176,6 @@ export function BranchesPage() {
           </Table.Content>
         </Table.ScrollContainer>
       </Table>
-
-      {/* ── Create modal ── */}
-      <BranchFormModal
-        isOpen={formOpen}
-        onClose={() => setFormOpen(false)}
-        onSubmit={handleCreate}
-        isLoading={createMut.isPending}
-      />
-
-      {/* ── Edit modal ── */}
-      <BranchFormModal
-        isOpen={!!editInitial}
-        onClose={() => setEditInitial(null)}
-        onSubmit={handleUpdate}
-        isLoading={updateMut.isPending}
-        initial={editInitial}
-      />
 
       {/* ── Delete confirmation ── */}
       <ConfirmModal
