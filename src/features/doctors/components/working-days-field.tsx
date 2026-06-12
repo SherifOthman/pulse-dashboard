@@ -46,7 +46,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
       {(errors as any)[name]?.root?.message && (
         <p className="text-xs text-danger">{(errors as any)[name].root.message}</p>
       )}
-      <div className="flex flex-col gap-1.5 overflow-hidden">
+      <div className="flex flex-col gap-1.5 overflow-hidden w-full">
         {wds.map((wd, i) => (
           <div
             key={i}
@@ -54,7 +54,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
               wd.enabled ? 'border-divider bg-surface' : 'border-dashed border-divider/60 bg-transparent'
             }`}
           >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 overflow-hidden">
               {/* Day checkbox */}
               <Controller
                 control={control}
@@ -80,7 +80,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
 
               {/* Time pickers — only visible when day is enabled */}
               {wd.enabled && (
-                <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-1 min-w-0" dir="ltr">
                   <TimeField
                     value={toTime(wd.startTime)}
                     onChange={(t: Time | null) => {
