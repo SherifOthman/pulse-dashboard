@@ -68,7 +68,10 @@ export function BranchesPage() {
       {/* ── Table ── */}
       <Table variant="primary">
         <Table.ScrollContainer>
-          <Table.Content aria-label="قائمة الفروع">
+          <Table.Content
+              aria-label="قائمة الفروع"
+              onRowAction={(key) => navigate(`/doctors/${doctorId}/branches/${key}`)}
+            >
             <Table.Header>
               <Table.Column isRowHeader className="text-right">الفرع</Table.Column>
               <Table.Column className="hidden md:table-cell text-right">الموقع</Table.Column>
@@ -107,8 +110,8 @@ export function BranchesPage() {
                 : branches.map((b) => (
                     <Table.Row
                       key={b.id}
-                      className="cursor-pointer hover:bg-surface-secondary transition-colors"
-                      onPress={() => navigate(`/doctors/${doctorId}/branches/${b.id}`)}
+                      id={b.id}
+                      className="cursor-pointer"
                     >
                       {/* Name + avatar */}
                       <Table.Cell>

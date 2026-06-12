@@ -82,7 +82,10 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, useDetails
       {/* ── Table ── */}
       <Table variant="primary">
         <Table.ScrollContainer>
-          <Table.Content aria-label="قائمة الفروع">
+          <Table.Content
+              aria-label="قائمة الفروع"
+              onRowAction={(key) => navigate(`${backRoute}/${businessId}/branches/${key}`)}
+            >
             <Table.Header>
               <Table.Column isRowHeader className="text-right">الفرع</Table.Column>
               <Table.Column className="hidden md:table-cell text-right">الموقع</Table.Column>
@@ -125,8 +128,8 @@ export function BranchesPage({ singularLabel, backRoute, branchHooks, useDetails
                 : branches.map((b) => (
                     <Table.Row
                       key={b.id}
-                      className="cursor-pointer hover:bg-surface-secondary transition-colors"
-                      onPress={() => navigate(`${backRoute}/${businessId}/branches/${b.id}`)}
+                      id={b.id}
+                      className="cursor-pointer"
                     >
                       {/* Branch name + avatar */}
                       <Table.Cell>
