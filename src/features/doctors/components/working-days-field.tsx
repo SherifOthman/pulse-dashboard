@@ -80,7 +80,7 @@ export function WorkingDaysField({ name = 'workingDays' }: Props) {
 
               {/* Time pickers — only visible when day is enabled */}
               {wd.enabled && (
-                <div className="flex items-center gap-2 flex-1 min-w-0" dir="ltr">
+                <div className="flex items-center gap-2 flex-1 min-w-0" dir="rtl">
                   <TimeField
                     value={toTime(wd.startTime)}
                     onChange={(t: Time | null) => {
