@@ -20,6 +20,7 @@ import { useDoctors, useDeleteDoctor } from './use-doctors'
 import type { DoctorListItem } from './types'
 import type { GovernorateDto } from '@/features/cities/types'
 import type { SpecializationDto } from '@/features/specializations/types'
+import { useCities } from '@/features/cities/use-cities'
 import api from '@/services/api'
 import { toAbsoluteUrl } from '@/services/image-url'
 
@@ -36,17 +37,21 @@ export function DoctorsPage() {
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState('')
   const [governorateId, setGovernorateId] = useState('')
+  const [cityId, setCityId] = useState('')
   const [specializationId, setSpecializationId] = useState('')
   const [gender, setGender] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<DoctorListItem | null>(null)
 
   const debouncedSearch = useDebounce(searchInput, 400)
 
+  const { data: cities = [] } = useCities(governorateId || undefined)
+
   const { data, isLoading, isError } = useDoctors({
     page,
     pageSize: PAGE_SIZE,
     name: debouncedSearch || undefined,
     governorateId: governorateId || undefined,
+    cityId: cityId || undefined,
     specializationId: specializationId || undefined,
     gender: gender !== '' ? parseInt(gender) : undefined,
   })
@@ -63,7 +68,7 @@ export function DoctorsPage() {
 
   const deleteMutation = useDeleteDoctor()
   const totalPages = data ? Math.ceil(data.totalCount / PAGE_SIZE) : 1
-  const hasActiveFilters = !!(debouncedSearch || governorateId || specializationId || gender)
+  const hasActiveFilters = !!(debouncedSearch || governorateId || cityId || specializationId || gender)
 
   const handleDelete = () => {
     if (!deleteTarget) return
@@ -79,6 +84,7 @@ export function DoctorsPage() {
   const clearFilters = () => {
     setSearchInput('')
     setGovernorateId('')
+    setCityId('')
     setSpecializationId('')
     setGender('')
     setPage(1)
@@ -121,9 +127,22 @@ export function DoctorsPage() {
         <AppSelect
           options={governorates.map((g) => ({ id: g.id, label: g.name }))}
           value={governorateId}
-          onChange={(val) => { setGovernorateId(val === governorateId ? '' : val); setPage(1) }}
+          onChange={(val) => {
+            setGovernorateId(val === governorateId ? '' : val)
+            setCityId('')
+            setPage(1)
+          }}
           placeholder="المحافظة"
           className="w-40"
+        />
+
+        <AppSelect
+          options={cities.map((c) => ({ id: c.id, label: c.name }))}
+          value={cityId}
+          onChange={(val) => { setCityId(val === cityId ? '' : val); setPage(1) }}
+          placeholder="المدينة"
+          className="w-40"
+          isDisabled={!governorateId}
         />
 
         <AppSelect

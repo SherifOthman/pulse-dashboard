@@ -20,6 +20,7 @@ import { pharmacyHooks } from './index'
 import { toAbsoluteUrl } from '@/services/image-url'
 import type { BusinessListItem } from '@/types/shared'
 import type { GovernorateDto } from '@/features/cities/types'
+import { useCities } from '@/features/cities/use-cities'
 import api from '@/services/api'
 
 const PAGE_SIZE = 10
@@ -30,15 +31,19 @@ export function PharmaciesPage() {
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState('')
   const [governorateId, setGovernorateId] = useState('')
+  const [cityId, setCityId] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<BusinessListItem | null>(null)
 
   const debouncedSearch = useDebounce(searchInput, 400)
+
+  const { data: cities = [] } = useCities(governorateId || undefined)
 
   const { data, isLoading, isError } = pharmacyHooks.useList({
     page,
     pageSize: PAGE_SIZE,
     name: debouncedSearch || undefined,
     governorateId: governorateId || undefined,
+    cityId: cityId || undefined,
   })
 
   const { data: governorates = [] } = useQuery<GovernorateDto[]>({
@@ -48,7 +53,7 @@ export function PharmaciesPage() {
 
   const deleteMutation = pharmacyHooks.useDelete()
   const totalPages = data ? Math.ceil(data.totalCount / PAGE_SIZE) : 1
-  const hasActiveFilters = !!(debouncedSearch || governorateId)
+  const hasActiveFilters = !!(debouncedSearch || governorateId || cityId)
 
   const handleDelete = () => {
     if (!deleteTarget) return
@@ -64,6 +69,7 @@ export function PharmaciesPage() {
   const clearFilters = () => {
     setSearchInput('')
     setGovernorateId('')
+    setCityId('')
     setPage(1)
   }
 
@@ -103,9 +109,22 @@ export function PharmaciesPage() {
         <AppSelect
           options={governorates.map((g) => ({ id: g.id, label: g.name }))}
           value={governorateId}
-          onChange={(val) => { setGovernorateId(val === governorateId ? '' : val); setPage(1) }}
+          onChange={(val) => {
+            setGovernorateId(val === governorateId ? '' : val)
+            setCityId('')
+            setPage(1)
+          }}
           placeholder="المحافظة"
           className="w-40"
+        />
+
+        <AppSelect
+          options={cities.map((c) => ({ id: c.id, label: c.name }))}
+          value={cityId}
+          onChange={(val) => { setCityId(val === cityId ? '' : val); setPage(1) }}
+          placeholder="المدينة"
+          className="w-40"
+          isDisabled={!governorateId}
         />
 
         {hasActiveFilters && (
