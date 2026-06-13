@@ -30,6 +30,13 @@ api.interceptors.response.use(
 
     if (!refreshPromise) {
       const storedRefreshToken = useAuthStore.getState().refreshToken;
+
+      // No refresh token stored at all — session is invalid, clear immediately.
+      if (!storedRefreshToken) {
+        useAuthStore.getState().clearSession();
+        return Promise.reject(error);
+      }
+
       refreshPromise = axios
         .post(
           `${api.defaults.baseURL}/auth/refresh`,
@@ -44,8 +51,8 @@ api.interceptors.response.use(
         })
         .catch((e) => {
           // Only clear the session if the server explicitly rejected the
-          // refresh token (401). A network error or 5xx (e.g. cold start on
-          // runasp.net) should NOT log the user out — they can try again.
+          // refresh token (401). A network error or 5xx should NOT log the
+          // user out — they can try again.
           if (e?.response?.status === 401) {
             useAuthStore.getState().clearSession();
           }
