@@ -21,16 +21,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Only attempt refresh on 401. If this request already retried, give up.
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
-    // Capture the current promise reference immediately.
-    // Multiple concurrent 401s share the same promise — only one refresh
-    // call is made. The finally{} sets refreshPromise=null but each caller
-    // already holds its own reference to the in-flight promise.
     if (!refreshPromise) {
       const storedRefreshToken = useAuthStore.getState().refreshToken;
       refreshPromise = axios
@@ -46,7 +43,12 @@ api.interceptors.response.use(
           });
         })
         .catch((e) => {
-          useAuthStore.getState().clearSession();
+          // Only clear the session if the server explicitly rejected the
+          // refresh token (401). A network error or 5xx (e.g. cold start on
+          // runasp.net) should NOT log the user out — they can try again.
+          if (e?.response?.status === 401) {
+            useAuthStore.getState().clearSession();
+          }
           throw e;
         })
         .finally(() => {
@@ -54,9 +56,6 @@ api.interceptors.response.use(
         });
     }
 
-    // Each concurrent request captures the same promise reference here,
-    // so even if finally{} has already nulled the module-level variable,
-    // this local reference is still valid.
     const pending = refreshPromise;
 
     return pending.then(
