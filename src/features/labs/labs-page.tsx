@@ -243,9 +243,8 @@ export function LabsPage() {
         {data && totalPages > 1 && (
           <Table.Footer>
             <div className="flex items-center justify-between px-1 py-2 w-full">
-              <span className="text-xs text-muted">
-                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.totalCount)} من{' '}
-                {data.totalCount}
+              <span className="text-xs text-muted whitespace-nowrap">
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, data.totalCount)} من {data.totalCount}
               </span>
               <Paginator page={page} total={totalPages} onChange={setPage} />
             </div>
