@@ -11,7 +11,7 @@ const phoneSchema = z.object({
 export const doctorFormSchema = z
   .object({
     name: z.string().min(1, "الاسم مطلوب").max(100, "الاسم طويل جداً"),
-    specializationIds: z.array(z.string()).min(1, "يجب اختيار تخصص واحد على الأقل"),
+    specializationId: z.string().min(1, "التخصص مطلوب"),
     governorateId: z.string().min(1, "المحافظة مطلوبة"),
     cityId: z.string().min(1, "المدينة مطلوبة"),
     description: z.string().max(500, "الوصف طويل جداً").optional(),
@@ -75,7 +75,7 @@ export type DoctorFormValues = z.infer<typeof doctorFormSchema>;
 
 export const doctorFormDefaults: DoctorFormValues = {
   name: "",
-  specializationIds: [],
+  specializationId: "",
   governorateId: "",
   cityId: "",
   description: "",
