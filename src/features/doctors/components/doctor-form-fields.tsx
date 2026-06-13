@@ -274,21 +274,48 @@ export function DoctorFormFields() {
       {/* ── Specialization + Gender ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Controller
-          name="specializationId"
+          name="specializationIds"
           control={control}
           render={({ field }) => (
-            <Field label="التخصص" error={errors.specializationId?.message}>
-              <AppSelect
-                variant="secondary"
-                isInvalid={!!errors.specializationId}
-                options={specializations.map((s) => ({
-                  id: s.id,
-                  label: s.name,
-                }))}
-                value={field.value || ""}
-                onChange={field.onChange}
-                placeholder="اختر التخصص"
-              />
+            <Field
+              label="التخصصات"
+              error={errors.specializationIds?.message ?? (errors.specializationIds as any)?.root?.message}
+            >
+              <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto rounded-lg border border-divider bg-surface-secondary p-2">
+                {specializations.length === 0 ? (
+                  <span className="text-xs text-muted px-2 py-1">جاري التحميل...</span>
+                ) : (
+                  specializations.map((s) => {
+                    const checked = (field.value ?? []).includes(s.id)
+                    return (
+                      <label
+                        key={s.id}
+                        className="flex items-center gap-2 cursor-pointer rounded px-2 py-1.5 hover:bg-surface transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          className="accent-primary h-4 w-4 shrink-0"
+                          checked={checked}
+                          onChange={() => {
+                            const current = field.value ?? []
+                            field.onChange(
+                              checked
+                                ? current.filter((id) => id !== s.id)
+                                : [...current, s.id],
+                            )
+                          }}
+                        />
+                        <span className="text-sm text-foreground">{s.name}</span>
+                      </label>
+                    )
+                  })
+                )}
+              </div>
+              {errors.specializationIds && (
+                <FieldError className="text-xs text-danger">
+                  {errors.specializationIds.message ?? (errors.specializationIds as any)?.root?.message}
+                </FieldError>
+              )}
             </Field>
           )}
         />

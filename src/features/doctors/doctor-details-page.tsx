@@ -270,9 +270,9 @@ export function DoctorDetailsPage() {
           <div>
             <h1 className="text-xl font-bold text-foreground leading-tight">{details.name}</h1>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
-              {details.specialization && (
-                <Chip size="sm" variant="soft" color="accent">{details.specialization}</Chip>
-              )}
+              {details.specializations?.length > 0 && details.specializations.map((s, i) => (
+                <Chip key={i} size="sm" variant="soft" color="accent">{s}</Chip>
+              ))}
               <Chip size="sm" variant="soft" color="default">
                 {details.gender === 0 ? 'ذكر' : 'أنثى'}
               </Chip>

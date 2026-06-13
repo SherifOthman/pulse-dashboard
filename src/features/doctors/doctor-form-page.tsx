@@ -47,7 +47,7 @@ export function DoctorFormPage() {
     if (existing) {
       reset({
         name: existing.name,
-        specializationId: existing.specializationId || "",
+        specializationIds: existing.specializationIds ?? [],
         governorateId: existing.governorateId || "",
         cityId: existing.cityId || "",
         description: existing.description || "",
@@ -71,7 +71,7 @@ export function DoctorFormPage() {
     clearErrors();
     const dto = {
       name: data.name.trim(),
-      specializationId: data.specializationId || undefined,
+      specializationIds: data.specializationIds?.length ? data.specializationIds : undefined,
       cityId: data.cityId || undefined,
       description: data.description?.trim() || undefined,
       address: data.address?.trim() || undefined,

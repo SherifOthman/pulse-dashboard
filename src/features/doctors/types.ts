@@ -76,8 +76,8 @@ export type DoctorDetailsDto = {
   branches: BranchDto[];
   testimonials: TestimonialDto[];
   services: ServiceDto[];
-  specializationId: string;
-  specialization: string;
+  specializationIds: string[];
+  specializations: string[];
   visitPrice: number | null;
 };
 
@@ -85,7 +85,7 @@ export type DoctorDetailsDto = {
 
 export type CreateDoctorDto = {
   name: string;
-  specializationId?: string;
+  specializationIds?: string[];
   cityId?: string;
   description?: string;
   address?: string;
